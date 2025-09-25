@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Stride Athletes</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preload" as="image" href="connect-header.jpg">
+</head>
+<body id="page-home">
+  <!-- Header: großer Titel mittig, powered by + Logo rechts -->
+  <header>
+    <h1 class="site-title">STRIDE ATHLETES</h1>
+    <div class="brand brand-right">
+      <div class="brand-stack">
+        <span class="powered">powered by</span>
+        <img id="brand-logo" class="brand-logo" src="Logo_black.png" alt="Logo">
+      </div>
+    </div>
+  </header>
+
+  <!-- Hauptbereich als Hero mit Banner, Subbar (Menü links + Tagline zentriert) und Buttons -->
+  <main class="hero">
+        <!-- Topbar: Menü (wird je nach Bildschirm über/unter dem Bild angeordnet) -->
+    <div class="hero-topbar">
+      <nav class="menu" id="mainMenu">
+        <button class="menu-button" id="menuButton" aria-haspopup="true" aria-expanded="false">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+          <span>Menü</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <ul class="menu-list" id="menuList" role="menu">
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="home">🏠 Startseite</button></li>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="find">🏃‍♂️ Run Clubs finden</button></li>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="register">📝 Run Club kostenlos registrieren</button></li>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="favs">❤️ Meine Favoriten</button></li>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="shop">🛒 Stride Athletes Online-Shop</button></li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Vollbreites Bild -->
+    <div class="hero-banner" role="img" aria-label="Verbindungsbanner"></div>
+
+    <!-- Subbar: links Menü, Mitte Tagline, rechts Spacer -->
+<div class="hero-subbar">
+
+  <!-- Tagline ZENTRAL -->
+  <div class="hero-tagline">
+    <span id="typewriter" data-text="Finde den passenden Run Club :)"></span>
+  </div>
+
+  <!-- Rechter Ausgleichs-Spacer -->
+  <div class="subbar-spacer" aria-hidden="true"></div>
+</div>
+
+    <!-- Buttons mittig im restlichen Bereich -->
+    <aside id="panel" class="hero-panel" aria-label="Aktionen">
+      <div class="cta-wrap">
+        <button id="btn-find-club" class="cta">Run Club finden</button>
+        <button id="btn-register-club" class="cta">Run Club kostenlos registrieren</button>
+      </div>
+    </aside>
+  </main>
+
+  <script src="app.js"></script>
+  <footer class="site-footer" role="contentinfo">
+  <div class="footer-inner">
+    <a href="impressum.html">Impressum</a>
+    <span aria-hidden="true">·</span>
+    <a href="datenschutz.html">Datenschutzerklärung</a>
+    <!-- Optional, erst wenn vorhanden:
+    <span aria-hidden="true">·</span>
+    <a href="agb.html">AGB</a>
+    <span aria-hidden="true">·</span>
+    <a href="widerruf.html">Widerruf</a>
+    -->
+  </div>
+</footer>
+
+</body>
+</html>

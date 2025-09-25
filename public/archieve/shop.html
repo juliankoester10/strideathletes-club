@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Online-Shop • Stride Athletes</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body id="page-shop">
+  <header>
+    <h1 class="site-title shop-title" style="margin:0 auto; text-align:center; font-size:clamp(48px,3.2vw,56px); font-weight:900;">
+      STRIDE ATHLETES
+    </h1>
+
+    <div class="header-left">
+      <nav class="menu" id="mainMenu">
+        <button class="menu-button" id="menuButton" aria-haspopup="true" aria-expanded="false">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+          <span>Menü</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <ul class="menu-list" id="menuList" role="menu">
+          <li role="none" class="menu-runclubs">
+            <button role="menuitem" class="menu-item has-sub" id="menu-runclubs-root" data-nav="home" aria-haspopup="true" aria-expanded="false">
+              ⭐ Run Clubs
+              <svg aria-hidden="true" viewBox="0 0 24 24" class="chev">
+                <polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <ul class="menu-sub" id="menu-runclubs-sub" role="menu" aria-label="Run Clubs Untermenü">
+              <li role="none"><button role="menuitem" class="menu-item" data-nav="find">🏃‍♂️ Run Clubs finden</button></li>
+              <li role="none"><button role="menuitem" class="menu-item" data-nav="register">📝 Run Clubs kostenlos registrieren</button></li>
+            </ul>
+          </li>
+
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="login" id="menu-login">🔑 Anmelden</button></li>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="orders" id="menu-orders" style="display:none;">📦 Meine Bestellungen</button></li>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="logout" id="menu-logout" style="display:none;">🚪 Abmelden</button></li>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="cart">🛒 Warenkorb</button></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn" id="btn-login" title="Anmelden" aria-label="Anmelden">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-5 0-9 2.5-9 5.5a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1C21 16.5 17 14 12 14Z"/>
+          </svg>
+        </button>
+
+        <button class="icon-btn" id="btn-logout" title="Abmelden" aria-label="Abmelden" style="display:none;">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M10 17l1.5-1.5L8 12l3.5-3.5L10 7l-5 5 5 5zm4.5 3h-2V4h2v16z"/>
+          </svg>
+        </button>
+
+        <button class="icon-btn" id="btn-orders" title="Meine Bestellungen" aria-label="Meine Bestellungen" style="display:none;">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M7 4h10a2 2 0 0 1 2 2v13l-7-3-7 3V6a2 2 0 0 1 2-2z"/>
+          </svg>
+        </button>
+
+        <button class="icon-btn" id="btn-cart" title="Warenkorb" aria-label="Warenkorb">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M7 4h-2l-1 2h2l3.6 7.59-1.35 2.44A2 2 0 0 0 10 19h9v-2h-8.42a.25.25 0 0 1-.22-.37L11 14h6a2 2 0 0 0 1.8-1.1l3.58-7.16A1 1 0 0 0 21.5 4H7zM7 20a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 .001 4.001A2 2 0 0 0 17 20z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="brand">
+        <img id="brand-logo" class="brand-logo" src="../Logo_black.png" alt="Logo">
+      </div>
+    </div>
+  </header>
+
+  <main style="padding:20px; min-height:calc(100vh - var(--header-height));">
+    <div class="shop-wrap">
+      <section aria-label="Produkte">
+        <div class="shop-rows">
+          <div class="shop-row shop-row-long" id="shop-long" aria-label="Longsleeves (oben)"></div>
+          <div class="shop-row shop-row-short" id="shop-short-a" aria-label="Shortsleeves (Mitte)"></div>
+          <div class="shop-row" id="shop-short-b" aria-label="Shortsleeves (unten)"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="cart-bar" role="region" aria-label="Warenkorb">
+      <span id="cart-summary">Warenkorb: 0 Artikel</span>
+      <button id="btn-checkout" class="btn">Zur Kasse</button>
+    </div>
+  </main>
+
+  <script src="../app.js"></script>
+  <script src="shop.js"></script>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <a href="../impressum.html">Impressum</a>
+      <span aria-hidden="true">•</span>
+      <a href="../datenschutz.html">Datenschutz</a>
+    </div>
+  </footer>
+</body>
+</html>

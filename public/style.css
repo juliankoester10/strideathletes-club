@@ -1,0 +1,1085 @@
+:root {
+  --black: #000000;
+  --white: #ffffff;
+  --cta-yellow: #eddd81;
+  --accent-blue: #0D1B2A;
+  --header-height: 120px;
+  --hero-gap: 28px;             /* Abstand über/unter dem Banner */
+  --hero-banner-height: 300px;  /* Höhe des Banners (mobil reduziert) */
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+/* Reset */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--black);
+  color: var(--white);
+}
+
+/* ================= Header (Standard) ================= */
+header {
+  min-height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--black);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-wrap: nowrap;
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Brand (Standard) */
+.brand { display: flex; flex-direction: column; gap: 8px; }
+.brand-stack { display: flex; flex-direction: column; line-height: 1.1; }
+.brand-title { font-size: 28px; font-weight: 800; color: var(--white); }
+.powered { font-size: 14px; color: rgba(255,255,255,0.85); }
+.brand-logo { height: clamp(64px, 10vw, 116px); width: auto; object-fit: contain; display: block; }
+
+/* Header-Actions (Login / Warenkorb) */
+.header-actions {
+  display: none; /* mobile default */
+  gap: 10px;
+  align-items: center;
+  margin-right: 10px;
+}
+.header-actions .icon-btn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-actions .icon-btn:hover {
+  background: rgba(255,255,255,0.08);
+}
+.header-actions .icon-btn svg {
+  width: 18px; height: 18px; display: block;
+}
+
+/* nur Desktop zeigen */
+@media (min-width: 1001px){
+  .header-actions { display: inline-flex; }
+}
+
+
+.brand-title{
+  white-space: nowrap;
+  text-wrap: nowrap;
+  word-break: keep-all;
+  font-size: clamp(14px, 6vw, 28px);
+  letter-spacing: .02em;
+}
+
+/* Flex-Fix */
+.header-right, .brand, .brand-stack { min-width: 0; }
+
+/* ================= Header auf der Startseite (Desktop/Tablet) ================= */
+#page-home header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 20px;
+  min-height: clamp(140px, 18vw, 240px);
+}
+
+/* Großer, zentraler Titel (Desktop/Tablet) */
+#page-home .site-title {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 900;
+  font-size: clamp(26px, 5.8vw, 88px);
+  line-height: 1.05;
+  letter-spacing: .5px;
+  text-align: center;
+  white-space: nowrap;
+  text-wrap: nowrap;
+  pointer-events: none;
+}
+
+/* Brand rechts oben */
+#page-home .brand-right { align-items: flex-end; }
+
+/* ================= Custom Dropdown-Menü ================= */
+.menu { position: relative; }
+.menu-button {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(15,15,15,0.9);
+  color: var(--white);
+  border: 2px solid var(--cta-yellow);
+  cursor: pointer; font-size: 14px;
+  backdrop-filter: blur(8px);
+}
+.menu-button:hover { box-shadow: 0 0 0 3px rgba(237,221,129,0.18); }
+.menu-button:focus { outline: none; box-shadow: 0 0 0 3px rgba(237,221,129,0.28); }
+.menu-button svg { width: 16px; height: 16px; }
+
+.menu-list {
+  position: absolute;
+  top: calc(100% - 6px);       /* leichte Überlappung zum Button */
+  left: 0;
+  min-width: 240px;
+  padding: 6px;
+  margin-top: 0;
+  list-style: none;
+  z-index: 1000;
+  display: none;
+  background: rgba(15,15,15,0.95);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.5);
+  overflow: visible;            /* wichtig: Submenüs dürfen ragen */
+}
+
+/* Zweite Brücke: fängt Mausbewegung direkt über der Liste */
+.menu-list::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -10px;
+  height: 10px;
+}
+
+/* Unsichtbare Hover-Brücke zwischen Button und Liste */
+.menu::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 100%;
+  width: 100%;
+  height: 16px; /* großzügiger Puffer */
+}
+
+/* Dropdown öffnen: Hover ODER per Tastaturfokus */
+.menu:hover .menu-list,
+.menu.pinned .menu-list,
+.menu:focus-within .menu-list,
+.menu-button:focus + .menu-list {
+  display: block;
+}
+
+.menu-item {
+  width: 100%; text-align: left; padding: 10px 12px; border-radius: 8px;
+  background: transparent; color: var(--white); border: none; cursor: pointer;
+  font-size: 14px; display: flex; align-items: center; gap: 8px;
+}
+.menu-item:hover { background: rgba(255,255,255,0.08); }
+
+/* ================= Startseite (Hero) ================= */
+main.hero {
+  min-height: calc(100vh - var(--header-height));
+  padding: 0;
+  display: grid;
+
+  /* Desktop/Tablet: Banner → Topbar (Menü) → Subbar (Tagline) → CTA */
+  grid-template-rows:
+    var(--hero-gap)
+    var(--hero-banner-height)
+    auto
+    auto
+    1fr;
+
+  grid-template-areas:
+    "gap-top"
+    "banner"
+    "topbar"
+    "subbar"
+    "cta";
+}
+@supports (height: 100svh) {
+  main.hero { min-height: calc(100svh - var(--header-height)); }
+}
+
+/* Banner */
+.hero-banner {
+  grid-area: banner;
+  width: 100%;
+  height: 100%;
+  background-image: url('connect-header.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Topbar: Menü (unter/über dem Bild per Media Query) */
+.hero-topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 16px 0;
+}
+.hero-topbar .menu { justify-self: start; }
+
+/* Subbar: Tagline zentriert */
+.hero-subbar {
+  grid-area: subbar;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+}
+.hero-subbar .hero-tagline { justify-self: center; }
+.hero-subbar .subbar-spacer { display: none; }
+
+/* Tagline Typo */
+.hero-tagline span#typewriter {
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--white);
+  white-space: nowrap;
+  position: relative;
+  text-align: center;
+}
+#typewriter::after {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--white);
+  margin-left: 6px;
+  vertical-align: -0.15em;
+  animation: tw-blink 1s steps(1, end) infinite;
+}
+@keyframes tw-blink { 50% { opacity: 0; } }
+
+/* Buttons-Zone */
+#panel.hero-panel {
+  grid-area: cta;
+  align-self: stretch;
+  justify-self: stretch;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  height: auto;
+}
+
+/* ========= Allgemeines Layout (andere Seiten) ========= */
+main:not(.hero) {
+  display: flex;
+  gap: 20px;
+  min-height: calc(100vh - var(--header-height));
+  padding: 20px;
+}
+@supports (height: 100svh) {
+  main:not(.hero) { min-height: calc(100svh - var(--header-height)); }
+}
+
+/* Linke Spalte / Panel (Standard) */
+#panel {
+  flex: 0 0 50%;
+  height: 100%;
+  background: var(--black);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Formularspalte (find/register) */
+.left-col {
+  flex: 0 0 50%;
+  height: 100%;
+  background: var(--black);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  padding: 24px;
+  overflow: auto;
+}
+
+/* Ergebnis-/rechte Spalte */
+.right-col {
+  flex: 0 0 50%;
+  height: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 6px 22px rgba(0,0,0,0.6);
+  padding: 24px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Back-Button */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.28);
+  background: transparent;
+  color: var(--white);
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 14px;
+}
+.back-btn:hover { background: rgba(255,255,255,0.08); }
+
+/* CTA Container & Buttons (Startseite) */
+.cta-wrap { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 22px; }
+.cta {
+  background: var(--cta-yellow);
+  color: #000000;
+  border: none;
+  padding: 24px 20px;
+  border-radius: 16px;
+  font-size: 22px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.2);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  text-align: center;
+}
+
+/* Typo/Inputs (Unterseiten) */
+h1, h2 { font-weight: 800; margin-bottom: 16px; }
+h1 { font-size: 28px; }
+h2 { font-size: 22px; }
+.section { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+label { font-size: 14px; color: rgba(255,255,255,0.86); }
+input, select, textarea {
+  background: #0f0f0f; color: var(--white);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 12px 12px; font-size: 16px; outline: none;
+}
+textarea { resize: vertical; }
+.helper { font-size: 12px; color: rgba(255,255,255,0.65); }
+
+/* Gelbe Buttons: Hover */
+.cta, button.btn { transition: transform .12s ease, box-shadow .12s ease, filter .12s ease; will-change: transform; }
+.cta:hover, button.btn:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(0,0,0,0.25); filter: brightness(1.02); }
+.cta:active, button.btn:active { transform: translateY(-1px); }
+button.btn {
+  background: var(--cta-yellow); color: #000;
+  border: none; border-radius: 12px; padding: 14px 16px;
+  font-weight: 800; font-size: 16px; cursor: pointer;
+}
+
+/* Ergebnisseite (Run Clubs finden) */
+.results-wrap { display: flex; flex-direction: column; gap: 14px; height: 100%; }
+#map {
+  width: 100%; height: 50%; min-height: 260px; border-radius: 10px; overflow: hidden;
+  background: #e9ecef; box-shadow: 0 6px 22px rgba(0,0,0,0.5);
+}
+#clubs-list {
+  flex: 1; overflow: auto; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px;
+  padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #0c0c0c;
+}
+.club-card {
+  position: relative; /* Anker für Herz */
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+  background: rgba(255,255,255,0.02);
+  grid-template-columns: 1fr;
+}
+.club-main { display: grid; gap: 6px; } /* kein positioning */
+.club-about {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+@media (min-width: 820px) {
+  .club-card { grid-template-columns: 1fr 1fr; }
+  .club-about {
+    border-top: none;
+    padding-top: 0;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    padding-left: 12px;
+  }
+}
+
+/* === Find-Seite: rechte Spalte als Flex-Column; Map fix, Liste scrollt === */
+#page-find .right-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#page-find .results-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Desktop/Tablet: Map mit fixer Höhe → genug Platz für 3–4 Cards */
+@media (min-width: 521px){
+  #page-find #map { height: 320px; flex: 0 0 auto; }
+}
+
+/* Mobil: etwas kleinere Map */
+@media (max-width: 520px){
+  #page-find #map { height: 260px; }
+}
+
+/* Liste füllt den Rest und scrollt „echt“ */
+#page-find #clubs-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  max-height: calc(100vh - var(--header-height) - 320px - 56px);
+}
+
+@media (min-height: 700px){
+  #page-find #clubs-list { min-height: 300px; }
+}
+
+@media (max-width: 520px) {
+  #page-find #map { height: 300px; }
+  #page-find #clubs-list { max-height: 48vh; }
+}
+
+/* ====== Registrierungsseite: volle Breite + feste Hälften ====== */
+.register-form-layout {
+  display: flex;
+  gap: 20px;
+  height: 100%;
+  width: 100%;
+}
+.run-col { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.run-actions { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+.run-note { font-size: 16px; color: rgba(255,255,255,0.9); }
+.btn-submit { align-self: flex-start; padding: 16px 18px; font-size: 18px; border-radius: 14px; }
+.form-error { color: #ff6b6b; font-size: 14px; }
+.word-counter { font-size: 12px; color: rgba(255,255,255,0.65); }
+
+/* Unterseiten: Header-Items oben ausrichten */
+header:has(.brand-title) { align-items: flex-start; }
+header:has(.brand-title) .header-left .menu { align-self: flex-start; }
+
+/* Registrierungsseite: H2-Rechts angleichen */
+#register-form .right-col h2 { margin-top: 48px; }
+
+/* ===== Tag & Uhrzeit (Mehrfachauswahl) ===== */
+.weekday-selector { position: relative; display: inline-block; }
+.btn-ghost {
+  background: rgba(15,15,15,0.9);
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.weekday-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 260px;
+  background: rgba(15,15,15,0.98);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+  z-index: 1000;
+}
+.weekday-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+}
+.weekday-grid label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; color: var(--white);
+}
+.weekday-actions { margin-top: 12px; display: flex; justify-content: flex-end; }
+
+.daytime-fields { display: grid; gap: 10px; margin-top: 12px; }
+.daytime-row { display: grid; grid-template-columns: 1fr 160px; align-items: center; gap: 10px; }
+.daytime-row input[type="time"] {
+  background: #0f0f0f; color: var(--white);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px; padding: 10px 12px; font-size: 16px;
+}
+
+/* ===== Erfolgsmeldung (Register): oben mittig, Typing-Caret) ===== */
+main { position: relative; }
+.submit-success {
+  position: absolute;
+  top: 8px;
+  left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+#submit-typer {
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--white);
+  white-space: nowrap;
+  position: relative;
+}
+#submit-typer::after {
+  content: '';
+  display: inline-block;
+  width: 2px; height: 1em;
+  background: var(--white);
+  margin-left: 6px;
+  vertical-align: -0.15em;
+  animation: tw-blink 1s steps(1, end) infinite;
+}
+
+/* ===== Weekday-Dropdown auf Suchenseite: nur zeigen, wenn Button/Liste aktiv ===== */
+#weekdayDropdown::after { display: none; }
+#weekdayDropdown:hover .menu-list { display: none; }
+#weekdayDropdown .menu-list { top: 100%; margin-top: 0; }
+#weekdayDropdown .menu-button:hover + .menu-list,
+#weekdayDropdown .menu-list:hover,
+#weekdayDropdown.pinned .menu-list { display: block; }
+#weekdayDropdown .menu-list::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -6px; height: 6px;
+}
+
+/* ===== Registrierung: Scrollbar rechts für die ganze Seite ===== */
+#page-register main { height: auto; min-height: calc(100vh - var(--header-height)); }
+#page-register .register-form-layout { height: auto; align-items: flex-start; }
+#page-register .left-col,
+#page-register .right-col { height: auto; overflow: visible; }
+
+/* ===== Favoriten-Seite: Layout ===== */
+#page-favorites main {
+  height: auto;
+  min-height: calc(100vh - var(--header-height));
+  flex-direction: column;
+  padding: 0 16px 16px;
+  gap: 0;
+}
+#page-favorites .left-col {
+  flex: 1 1 auto;
+  height: auto;
+  overflow: visible;
+  padding-top: 0;
+}
+#page-favorites .right-col { display: none; }
+/* Liste der Favoriten */
+#favorites-list {
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #0c0c0c;
+}
+
+/* ===== Responsives Verhalten (Tablet) ===== */
+@media (max-width: 1000px) {
+  #page-home .site-title { font-size: clamp(28px, 8.5vw, 72px); }
+  #page-home header { min-height: clamp(120px, 22vw, 200px); }
+  main.hero { height: auto; min-height: calc(100vh - var(--header-height)); }
+  main:not(.hero) { flex-direction: column; height: auto; }
+  #panel, .left-col, .right-col { flex: 1 1 auto; height: auto; }
+  #map { height: 320px; }
+
+  .register-form-layout { height: auto; }
+  .btn-submit { align-self: stretch; text-align: center; }
+}
+
+/* ===== Mobile-Only Fixes ===== */
+@media (max-width: 520px){
+  :root { --hero-banner-height: 150px; }
+
+  header { padding: 10px 12px; }
+  .powered { font-size: 12px; }
+  .brand-logo { height: 72px; }
+
+  html, body { overflow-x: hidden; }
+
+  main, header, .left-col, .right-col, #panel,
+  .hero-topbar, .hero-subbar, .hero-tagline, .menu-list,
+  #clubs-list, #favorites-list, .club-card, .club-main, .club-about {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  main.hero {
+    grid-template-rows:
+      var(--hero-gap)
+      auto
+      var(--hero-banner-height)
+      auto
+      1fr;
+    grid-template-areas:
+      "gap-top"
+      "topbar"
+      "banner"
+      "subbar"
+      "cta";
+  }
+
+  .hero-topbar { padding: 10px 12px 6px; }
+
+  .hero-subbar {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .hero-subbar .hero-tagline { justify-self: center; }
+  .hero-tagline span#typewriter {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    display: inline-block;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .menu-list { max-width: 92vw; }
+
+  #page-home .site-title {
+    position: static;
+    transform: none;
+    margin: 0 auto 8px;
+    text-align: center;
+    white-space: nowrap;
+    pointer-events: auto;
+  }
+  #page-home header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 12px 10px;
+    min-height: auto;
+  }
+  #page-home .brand-right { align-self: flex-end; }
+
+  .register-form-layout { display: block; width: 100%; overflow-x: hidden; }
+  #page-register .left-col,
+  #page-register .right-col {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  #page-register #register-form .right-col h2 { margin-top: 16px; }
+}
+
+/* ===== Favoriten-Herz + Tooltip ===== */
+.fav-wrap {
+  position: absolute;
+  top: 8px; right: 8px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.fav-btn {
+  appearance: none; -webkit-appearance: none; background: transparent; border: 0; padding: 0;
+  cursor: pointer; color: rgba(255,255,255,0.9);
+  line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+}
+.fav-btn svg { width: 22px; height: 22px; display: block; }
+.fav-btn:hover { color: #ff8da1; }
+.fav-btn.active { color: #ff3b5c; }
+.fav-btn.active:hover { color: #ff8da1; }
+.fav-tip {
+  font-size: 12px; color: rgba(255,255,255,0.9);
+  background: rgba(15,15,15,0.95);
+  border: 1px solid rgba(255,255,255,0.18);
+  padding: 4px 8px; border-radius: 8px;
+  white-space: nowrap; pointer-events: none;
+  opacity: 0; transform: translateY(-4px);
+  transition: opacity .12s ease, transform .12s ease;
+}
+.fav-wrap:hover .fav-tip { opacity: 1; transform: translateY(0); }
+
+.site-footer {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 16px;
+  background: #000;
+}
+.site-footer .footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.site-footer a {
+  color: rgba(255,255,255,0.9);
+  text-decoration: none;
+  font-size: 14px;
+}
+.site-footer a:hover { text-decoration: underline; }
+.site-footer span[aria-hidden="true"] { opacity: .6; }
+@media (max-width: 520px){
+  .site-footer { padding: 14px 12px; }
+  .site-footer a { font-size: 13px; }
+}
+
+/* ===== Legal Pages (Desktop): Titel & Inhalt links, Inhalt direkt unter Titel ===== */
+@media (min-width: 1001px) {
+  .legal-main { display: block !important; }
+  .legal-title {
+    font-size: clamp(36px, 3.2vw, 56px);
+    line-height: 1.1;
+    text-align: left;
+    margin: 0 0 16px 0;
+    font-weight: 900;
+  }
+  .legal-content {
+    max-width: none;
+    margin: 0;
+  }
+  .legal-content h2 { margin-top: 18px; }
+  .legal-content p,
+  .legal-content ul,
+  .legal-content li {
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: left;
+  }
+}
+
+/* ===== Shop-spezifisches Mega-Menü (nur auf shop.html) ===== */
+#page-shop .menu-runclubs { position: relative; }
+
+/* Root-Item exakt wie andere .menu-item dimensionieren */
+#page-shop .menu-item.has-sub {
+  display: flex;               /* statt inline-flex */
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;          /* wie .menu-item */
+  font-size: 14px;             /* wie .menu-item */
+  line-height: 1.2;            /* kompakt, kein Aufblasen */
+  width: 100%;                 /* gleiche Breite wie die anderen Einträge */
+}
+
+/* Pfeil (Chevron) hart begrenzen */
+#page-shop .menu-item.has-sub .chev {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  opacity: .8;
+}
+
+/* Submenü rechts neben dem Root-Item */
+#page-shop .menu-sub {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  min-width: 240px;
+  margin-left: 8px;
+  padding: 6px;
+  list-style: none;
+  display: none;
+  background: rgba(15,15,15,0.95);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.5);
+  z-index: 1100;
+}
+
+/* Hover öffnet die Sub-Liste */
+#page-shop .menu-runclubs:hover > .menu-sub { display: block; }
+
+/* ===== Shop: Logo ohne Brand-Text nur auf shop.html ===== */
+#page-shop .brand-stack { 
+  display: none !important; 
+}
+
+/* Seitliche Hover-Brücke für den Übergang nach rechts */
+#page-shop .menu-sub::before {
+  content: "";
+  position: absolute;
+  left: -12px; top: 0;
+  width: 12px; height: 100%;
+}
+
+/* ===== Shop: Header-Actions (Login / Warenkorb) nur auf shop.html ===== */
+#page-shop .header-actions {
+  display: none;              /* mobile default */
+  gap: 10px;
+  align-items: center;
+  margin-left: 10px;          /* Abstand zum Menü */
+}
+
+#page-shop .header-actions .icon-btn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1; /* stabil */
+}
+
+#page-shop .header-actions .icon-btn:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+#page-shop .header-actions .icon-btn svg {
+  width: 26px; height: 26px; display: block; overflow: visible;
+}
+
+/* ===== Shop: Reihenfolge in der linken Header-Zeile fixieren ===== */
+#page-shop .header-left {
+  display: flex;           /* sollte global schon so sein, zur Sicherheit */
+  align-items: center;
+  gap: 12px;
+}
+
+#page-shop .header-left .menu {
+  order: 1;                /* Menü zuerst */
+}
+
+#page-shop .header-left .header-actions {
+  order: 2;                /* Icons danach */
+  margin-left: 10px;       /* kleiner Abstand rechts vom Menü */
+}
+
+
+/* nur Desktop zeigen */
+@media (min-width: 1001px){
+  #page-shop .header-actions { display: inline-flex; }
+}
+
+/* falls nötig: Logo sicher ganz rechts halten – nur Shop */
+#page-shop .header-right { margin-left: auto; }
+
+
+/* Mobile: Submenü unter das Root fallen lassen (kein Hover) */
+@media (max-width: 520px) {
+  #page-shop .menu-sub {
+    position: static;
+    margin: 6px 0 0 0;
+    display: block;  /* auf Touch sichtbar */
+  }
+}
+
+/* Shop: großer, zentraler Titel (nur Desktop) — KLEINER GEMACHT */
+@media (min-width: 1001px) {
+  #page-shop header { position: relative; }
+  #page-shop .site-title {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 900;
+    font-size: clamp(40px, 4.5vw, 72px); /* vorher: clamp(45px, 5.5vw, 84px) */
+    line-height: 1.05;
+    letter-spacing: .5px;
+    text-align: center;
+    white-space: nowrap;
+    text-wrap: nowrap;
+    pointer-events: none;
+  }
+}
+
+/* SHOP: zweizeilige Anordnung (oben 2, unten 3), Karten größer & mittig */
+.shop-wrap { display: grid; gap: 28px; }
+
+.shop-rows {
+  display: grid;
+  gap: 32px;                 /* Abstand zwischen oberer und unterer Reihe */
+  max-width: 1200px;         /* Block mittig begrenzen */
+  margin: 0 auto;            /* zentrieren */
+  padding: 10px 0 30px;
+}
+
+/* Reihen – Basis (mobil: 1 Spalte) */
+.shop-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;                 /* Abstand zwischen Produkten */
+}
+
+/* Desktop: Longsleeves = 2 nebeneinander, Shortsleeves = 3 nebeneinander */
+@media (min-width: 1001px){
+  .shop-row-long  { grid-template-columns: repeat(2, minmax(280px, 1fr)); }
+  .shop-row-short { grid-template-columns: repeat(3, minmax(260px, 1fr)); }
+}
+
+/* Produktkarte – größer */
+.shop-card {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Bildbereich: weißes Quadrat */
+.shop-card .img {
+  aspect-ratio: 1 / 1;
+  background: #ffffff;        /* weißes Quadrat */
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  display: grid;
+  place-items: center;
+}
+
+/* Falls ein <img> gesetzt ist, skaliert es normal;
+   dein Platzhalter kann aber auch entfallen, da der Hintergrund schon weiß ist */
+.shop-card .img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Meta – größer, mehr Luft */
+.shop-card .meta {
+  padding: 14px 16px;
+  display: grid;
+  gap: 10px;
+}
+
+/* Name in WEISS, kräftiger */
+.shop-card .meta .shop-name {
+  color: var(--white);
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+/* Farbe in Grau, nur der Farbname (z. B. "blue") */
+.shop-card .meta .shop-color {
+  color: rgba(255,255,255,0.7);
+  font-size: 15px;
+}
+
+/* Preis etwas größer/kräftiger */
+.shop-card .meta .shop-price {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Mobile: 1 pro Zeile (behält dein gewünschtes Verhalten) */
+@media (max-width: 1000px){
+  .shop-row { display: grid; grid-template-columns: 1fr; gap: 14px; }
+}
+
+/* Cart-Bar fix am unteren Rand */
+.cart-bar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: #0f0f0f; border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 14px; display: flex; gap: 10px; align-items: center; justify-content: space-between;
+  z-index: 100;
+}
+body#page-shop { padding-bottom: 64px; } /* Platz für Cart-Bar nur auf Shop-Seite */
+
+/* === Shop-Layout: Produkte mittig (nur auf shop.html) === */
+#page-shop .shop-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+#page-shop .shop-rows {
+  display: grid;
+  gap: 28px;
+  justify-content: center;   /* zentriert die beiden Reihen als Block */
+}
+
+#page-shop .shop-row {
+  display: grid;
+  gap: 24px;
+  justify-content: center;   /* zentriert die Karten innerhalb der Reihe */
+}
+
+/* Kartenbreite leicht fixieren, damit die Zentrierung stabil ist */
+#page-shop .shop-card { width: 300px; margin: 0 auto; }
+
+/* Shop: Platz für die fixe Cart-Bar schaffen, damit der Footer sichtbar bleibt */
+#page-shop main {
+  padding-bottom: 120px; /* >= Höhe der Cart-Bar + etwas Luft */
+}
+
+/* Optional: auf kleineren Screens etwas kompakter */
+@media (max-width: 520px) {
+  #page-shop main {
+    padding-bottom: 140px; /* mobiler Browser-UI + Cart-Bar */
+  }
+}
+
+@media (min-width: 1001px){
+  /* Oben 2 nebeneinander, unten 3 nebeneinander */
+  #page-shop .shop-row-long  { grid-template-columns: repeat(2, 300px); }
+  #page-shop .shop-row-short { grid-template-columns: repeat(3, 300px); }
+}
+
+@media (max-width: 1000px){
+  /* Mobil/Tablet: untereinander (hast du so gewünscht) */
+  #page-shop .shop-row-long,
+  #page-shop .shop-row-short { grid-template-columns: 1fr; }
+}
+
+/* ============ NEU: Linksbündige Reihen (2 / 2 / 1) für shop.html ============ */
+.shop-rows-left { display: grid; gap: 20px; }
+.shop-row-left { display: flex; gap: 24px; justify-content: flex-start; flex-wrap: nowrap; }
+.shop-row-left .shop-card { width: 300px; }
+
+/* ============ NEU: Produktseite Layout ============ */
+.product-main { padding: 20px; min-height: calc(100vh - var(--header-height)); }
+.product-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.product-gallery .pg-main { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; overflow: hidden; background:#fff; }
+.product-gallery .pg-main img { width: 100%; height: auto; display: block; }
+.pg-thumbs { display: flex; gap: 8px; margin-top: 10px; }
+.pg-thumbs img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; cursor: pointer; }
+.product-info h1 { margin-bottom: 8px; }
+.p-color { color: rgba(255,255,255,0.75); margin-bottom: 6px; }
+.p-price { font-weight: 800; margin-bottom: 16px; }
+.p-options { display: grid; gap: 10px; margin-bottom: 12px; }
+.p-sizes { display: flex; gap: 8px; }
+.size-btn { background:#0f0f0f; color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:10px; padding:8px 12px; cursor:pointer; }
+.size-btn.active, .size-btn:hover { background:#222; }
+#p-qty { width: 90px; }
+.p-details { margin-top: 18px; }
+@media (max-width: 900px){ .product-layout { grid-template-columns: 1fr; } }
+
+/* ============ NEU: Warenkorbseite Layout ============ */
+.cart-main { padding: 20px; min-height: calc(100vh - var(--header-height)); }
+.cart-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; }
+.cart-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:10px; }
+.ci-left { display:flex; gap:12px; align-items:center; }
+.ci-img img { width:72px; height:72px; object-fit:cover; background:#fff; border-radius:8px; }
+.ci-meta .ci-name { font-weight:800; }
+.ci-meta .ci-meta2 { color: rgba(255,255,255,0.75); font-size:14px; margin:2px 0 6px; }
+.ci-remove { background:transparent; border:1px solid rgba(255,255,255,0.25); color:#fff; border-radius:8px; padding:6px 8px; cursor:pointer; }
+.ci-right { display:flex; gap:12px; align-items:center; }
+.ci-qty { width:72px; }
+.ci-line { font-weight:800; }
+.cart-summary-box { display:flex; align-items:center; justify-content:space-between; border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:12px; }
+.cart-actions { display:flex; gap:10px; }
+
+/* ============ NEU: Mehr Platz unten für fixe Cart-Bar damit Footer sichtbar bleibt ============ */
+#page-shop main, #page-product .product-main, #page-cart .cart-main {
+  padding-bottom: 140px;
+}

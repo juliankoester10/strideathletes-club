@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Run Clubs finden • Stride Athletes</title>
+
+  <!-- Globales CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+
+  <!-- Seite-spezifische Ergänzungen (nur hier) -->
+  <style>
+    /* Vorschlagsliste unter Stadt/PLZ */
+    .field-relative { position: relative; }
+    .suggest-list {
+      position: absolute;
+      left: 0; right: 0; top: calc(100% + 6px);
+      background: rgba(15,15,15,0.98);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 10px; padding: 6px; z-index: 1000;
+      list-style: none; margin: 0;
+      max-height: 220px; overflow: auto;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+    }
+    .suggest-item { padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+    .suggest-item:hover, .suggest-item:focus { background: rgba(255,255,255,0.08); outline: none; }
+
+    /* Zeitbereich */
+    .time-range { display: flex; align-items: center; gap: 10px; }
+    .time-sep { opacity: .85; }
+  </style>
+</head>
+<body id="page-find">
+  <header>
+    <!-- Menü LINKS oben -->
+    <div class="header-left">
+      <nav class="menu" id="mainMenu">
+        <button
+          class="menu-button"
+          id="menuButton"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="menuList">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+          <span>Menü</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <ul class="menu-list" id="menuList" role="menu">
+  <li role="none"><button role="menuitem" class="menu-item" data-nav="home">🏠 Startseite</button></li>
+  <li role="none"><button role="menuitem" class="menu-item" data-nav="find">🏃‍♂️ Run Clubs finden</button></li>
+  <li role="none"><button role="menuitem" class="menu-item" data-nav="register">📝 Run Club kostenlos registrieren</button></li>
+  <li role="none"><button role="menuitem" class="menu-item" data-nav="favs">❤️ Meine Favoriten</button></li>
+  <li role="none"><button role="menuitem" class="menu-item" data-nav="shop">🛒 Stride Athletes Online-Shop</button></li>
+</ul>
+      </nav>
+    </div>
+
+    <!-- Brand RECHTS oben -->
+    <div class="header-right">
+      <div class="brand">
+        <div class="brand-stack">
+          <span class="brand-title">STRIDE ATHLETES</span>
+          <span class="powered">powered by</span>
+        </div>
+        <img id="brand-logo" class="brand-logo" src="Logo_black.png" alt="Logo">
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- FILTER (links) -->
+    <section class="left-col" aria-label="Filter">
+      <a href="index.html" class="back-btn">← Zurück</a>
+      <h1>Run Clubs finden</h1>
+
+      <!-- Stadt / PLZ mit Vorschlägen -->
+      <div class="section field-relative">
+        <label for="filter-plzcity">Stadt oder PLZ</label>
+        <input id="filter-plzcity" type="text" placeholder="z. B. 22765 Hamburg" autocomplete="postal-code">
+        <ul id="plzcity-suggestions" class="suggest-list" role="listbox" hidden></ul>
+      </div>
+
+      <div class="section">
+        <label for="filter-name">Name Run Club</label>
+        <input id="filter-name" type="text" placeholder="z. B. Runners" autocomplete="organization">
+      </div>
+
+      <!-- Wochentag (Dropdown mit Menü-Styling) -->
+      <div class="section">
+        <label>Wochentag</label>
+        <div class="menu" id="weekdayDropdown">
+          <button
+            type="button"
+            class="menu-button"
+            id="weekdayButton"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="weekdayList">
+            <span id="weekdayLabel">Alle</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <ul class="menu-list" id="weekdayList" role="menu">
+            <li role="none"><button class="menu-item" role="menuitem" data-day="">Alle</button></li>
+            <li role="none"><button class="menu-item" role="menuitem" data-day="Montag">Montag</button></li>
+            <li role="none"><button class="menu-item" role="menuitem" data-day="Dienstag">Dienstag</button></li>
+            <li role="none"><button class="menu-item" role="menuitem" data-day="Mittwoch">Mittwoch</button></li>
+            <li role="none"><button class="menu-item" role="menuitem" data-day="Donnerstag">Donnerstag</button></li>
+            <li role="none"><button class="menu-item" role="menuitem" data-day="Freitag">Freitag</button></li>
+            <li role="none"><button class="menu-item" role="menuitem" data-day="Samstag">Samstag</button></li>
+            <li role="none"><button class="menu-item" role="menuitem" data-day="Sonntag">Sonntag</button></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Uhrzeit von-bis -->
+      <div class="section">
+        <label>Uhrzeit</label>
+        <div class="time-range">
+          <input id="time-from" type="time" placeholder="--:--">
+          <span class="time-sep">bis</span>
+          <input id="time-to" type="time" placeholder="--:--">
+        </div>
+      </div>
+
+      <!-- Strecke & Pace -->
+      <div class="section">
+        <label for="filter-distance">Strecke (in km)</label>
+        <input id="filter-distance" type="number" min="0" step="0.5" placeholder="z. B. 10" inputmode="decimal">
+      </div>
+
+      <div class="section">
+        <label for="filter-pace">Pace (min/km)</label>
+        <input id="filter-pace" type="text" placeholder="z. B. 6:10" inputmode="numeric">
+      </div>
+
+      <button id="btn-search" class="btn" type="button">Run Clubs anzeigen</button>
+    </section>
+
+    <!-- ERGEBNISSE (rechts) -->
+    <section class="right-col" aria-label="Ergebnisse">
+      <div class="results-wrap">
+        <h2>Run Clubs</h2>
+        <div id="map"></div>
+        <div id="clubs-list" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Leaflet + Logik -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+  <script src="find.js" defer></script>
+
+  <footer class="site-footer" role="contentinfo">
+  <div class="footer-inner">
+    <a href="impressum.html">Impressum</a>
+    <span aria-hidden="true">·</span>
+    <a href="datenschutz.html">Datenschutzerklärung</a>
+    <!-- Optional, erst wenn vorhanden:
+    <span aria-hidden="true">·</span>
+    <a href="agb.html">AGB</a>
+    <span aria-hidden="true">·</span>
+    <a href="widerruf.html">Widerruf</a>
+    -->
+  </div>
+</footer>
+
+</body>
+</html>

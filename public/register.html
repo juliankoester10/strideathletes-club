@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Run Club kostenlos registrieren • Stride Athletes</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body id="page-register">
+  <header>
+    <!-- Menü LINKS oben -->
+    <div class="header-left">
+      <nav class="menu" id="mainMenu">
+        <button
+          class="menu-button"
+          id="menuButton"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="menuList">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+          <span>Menü</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <ul class="menu-list" id="menuList" role="menu">
+  <li role="none"><button role="menuitem" class="menu-item" data-nav="home">🏠 Startseite</button></li>
+  <li role="none"><button role="menuitem" class="menu-item" data-nav="find">🏃‍♂️ Run Clubs finden</button></li>
+  <li role="none"><button role="menuitem" class="menu-item" data-nav="register">📝 Run Club kostenlos registrieren</button></li>
+  <li role="none"><button role="menuitem" class="menu-item" data-nav="favs">❤️ Meine Favoriten</button></li>
+  <li role="none"><button role="menuitem" class="menu-item" data-nav="shop">🛒 Stride Athletes Online-Shop</button></li>
+</ul>
+      </nav>
+    </div>
+
+    <!-- Brand RECHTS oben -->
+    <div class="header-right">
+      <div class="brand">
+        <div class="brand-stack">
+          <span class="brand-title">STRIDE ATHLETES</span>
+          <span class="powered">powered by</span>
+        </div>
+        <img id="brand-logo" class="brand-logo" src="Logo_black.png" alt="Logo">
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Erfolgsmeldung oben mittig (zunächst versteckt) -->
+    <div id="submit-success" class="submit-success" hidden>
+      <span id="submit-typer" data-text="Die Anfrage wurde erfolgreich versendet. Wir melden uns bei dir via Email :)"></span>
+    </div>
+
+    <!-- Formular über beide Spalten -->
+    <form id="register-form" class="register-form-layout" novalidate>
+      <!-- LINKE SEITE -->
+      <section class="left-col" aria-label="Club-Informationen">
+        <a href="index.html" class="back-btn" id="back-register">← Zurück</a>
+        <h1>Run Club kostenlos registrieren</h1>
+        <p class="helper">* Pflichtfelder</p>
+
+        <div class="section">
+          <label for="rc-name">Name Run Club <span aria-hidden="true">*</span></label>
+          <input id="rc-name" name="name" type="text" required placeholder="z. B. Kreuzberg Runners" autocomplete="organization">
+        </div>
+
+        <div class="section">
+          <label for="rc-plzcity">PLZ und Stadt <span aria-hidden="true">*</span></label>
+          <input id="rc-plzcity" name="plzcity" type="text" required placeholder="z. B. 10997 Berlin" autocomplete="postal-code">
+        </div>
+
+        <div class="section">
+          <label for="rc-instagram">Instagram Name oder Link zur Website <span aria-hidden="true">*</span></label>
+          <input id="rc-instagram" name="instagram" type="text" required placeholder="@deinclub oder https://…" autocomplete="url">
+        </div>
+
+        <div class="section">
+          <label for="rc-email">E-Mail <span aria-hidden="true">*</span></label>
+          <input id="rc-email" name="email" type="email" required placeholder="z. B. kontakt@deinclub.de" autocomplete="email" inputmode="email">
+        </div>
+
+        <div class="section">
+          <label for="rc-host">Host des Run Clubs <span aria-hidden="true">*</span></label>
+          <input id="rc-host" name="host" type="text" required placeholder="z. B. Max Mustermann" autocomplete="name">
+        </div>
+
+        <div class="section">
+          <label for="rc-about">Über unseren Run Club (optional, max. 200 Wörter)</label>
+          <textarea id="rc-about" name="about" rows="5" placeholder="Beschreibe euren Club in eigenen Worten …"></textarea>
+          <div class="word-counter" id="about-counter">0 / 200 Wörter</div>
+        </div>
+      </section>
+
+      <!-- RECHTE SEITE -->
+      <section class="right-col" aria-label="Angaben zum Run">
+        <div class="run-col">
+          <h2>Angaben zum Run</h2>
+
+          <div class="section">
+            <label for="rc-meeting">Standort des Treffpunkts <span aria-hidden="true">*</span></label>
+            <input id="rc-meeting" name="meeting" type="text" required placeholder="z. B. Admiralbrücke" autocomplete="address-line1">
+          </div>
+
+          <!-- Tag & Uhrzeit -->
+          <div class="section">
+            <label>Tag und Uhrzeit <span aria-hidden="true">*</span></label>
+
+            <div class="weekday-selector" id="weekdaySelector">
+              <button
+                type="button"
+                class="btn btn-ghost"
+                id="openWeekdayPicker"
+                aria-controls="weekdayPanel"
+                aria-expanded="false">
+                Tage auswählen
+              </button>
+
+              <div class="weekday-panel" id="weekdayPanel" hidden>
+                <div class="weekday-grid">
+                  <label><input type="checkbox" value="Montag"> Montag</label>
+                  <label><input type="checkbox" value="Dienstag"> Dienstag</label>
+                  <label><input type="checkbox" value="Mittwoch"> Mittwoch</label>
+                  <label><input type="checkbox" value="Donnerstag"> Donnerstag</label>
+                  <label><input type="checkbox" value="Freitag"> Freitag</label>
+                  <label><input type="checkbox" value="Samstag"> Samstag</label>
+                  <label><input type="checkbox" value="Sonntag"> Sonntag</label>
+                </div>
+                <div class="weekday-actions">
+                  <button type="button" class="btn" id="confirmWeekdays">Fertig</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamische (Tag, Uhrzeit)-Felder -->
+            <div id="daytime-fields" class="daytime-fields"></div>
+
+            <div
+              id="daytime-error"
+              class="form-error"
+              role="alert"
+              aria-live="polite"
+              style="display:none;">
+              Bitte mindestens einen Tag auswählen und für jeden ausgewählten Tag die Uhrzeit angeben
+            </div>
+          </div>
+
+          <div class="section">
+            <label for="rc-distance">Strecke (optional)</label>
+            <select id="rc-distance" name="distance">
+              <option>Keine Angabe</option>
+              <option>1-5 km</option>
+              <option>5-10 km</option>
+              <option>10-15 km</option>
+              <option>10-20 km</option>
+              <option>Ab 20 km</option>
+            </select>
+          </div>
+
+          <div class="section">
+            <label for="rc-pace">Pace (min/km, optional, z. B. 5:30-6:10)</label>
+            <input id="rc-pace" name="pace" type="text" placeholder="z. B. 5:30-6:10" inputmode="numeric">
+          </div>
+
+          <!-- Unten verankert: Hinweis + Einwilligung + Submit -->
+          <div class="run-actions">
+            <p class="run-note">
+              Nach dem Absenden prüfen wir die Angaben und machen deinen Run Club für Läufer:innen auffindbar.
+            </p>
+
+            <!-- Einwilligung (Pflicht) -->
+            <div class="section consent-section">
+              <label class="consent">
+                <input type="checkbox" id="rc-consent" name="consent">
+                <span>
+                  Ich willige in die Speicherung und Verarbeitung meiner personenbezogenen Daten
+                  gemäß der <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a> zur Bearbeitung meiner Run-Club-Registrierung ein. Ich kann meine Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen (Kontakt siehe <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a>).
+                </span>
+              </label>
+              <div
+                id="consent-error"
+                class="form-error"
+                role="alert"
+                aria-live="polite"
+                style="display:none;">
+                Bitte der Einwilligung zur Speicherung und Verarbeitung der Daten zustimmen
+              </div>
+            </div>
+
+            <!-- Submit + Pflichtfeldhinweis -->
+            <button type="submit" class="btn btn-submit">Run Club eintragen</button>
+            <div
+              id="form-error"
+              class="form-error"
+              role="alert"
+              aria-live="polite"
+              style="display:none;">
+              Bitte alle Pflichtfelder ausfüllen
+            </div>
+          </div>
+        </div>
+      </section>
+    </form>
+  </main>
+
+  <script src="register.js"></script>
+
+  <footer class="site-footer" role="contentinfo">
+  <div class="footer-inner">
+    <a href="impressum.html">Impressum</a>
+    <span aria-hidden="true">·</span>
+    <a href="datenschutz.html">Datenschutzerklärung</a>
+    <!-- Optional, erst wenn vorhanden:
+    <span aria-hidden="true">·</span>
+    <a href="agb.html">AGB</a>
+    <span aria-hidden="true">·</span>
+    <a href="widerruf.html">Widerruf</a>
+    -->
+  </div>
+</footer>
+
+</body>
+</html>
