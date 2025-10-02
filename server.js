@@ -23,9 +23,7 @@ console.log(
   'confirmSecret=', Boolean(process.env.EMAIL_CONFIRM_SECRET || process.env.SHEETS_SECRET)
 );
 
-// ===== Shop-Konfig/Proxy wurden entfernt, da Shop entkoppelt ist =====
-
-// Helpers
+// ===== Helpers =====
 const isEmail = (s) => /\S+@\S+\.\S+/.test(String(s || '').trim());
 const getConfirmSecret = () =>
   process.env.EMAIL_CONFIRM_SECRET || process.env.SHEETS_SECRET || (process.env.GMAIL_APP_PASSWORD ?? '');
@@ -55,9 +53,23 @@ function verifyConfirmToken(token) {
   } catch { return null; }
 }
 
+/** Baut die menschenlesbare Mail-Zeile für einen einzelnen Tag */
+function formatTagRow(s) {
+  if (!s || typeof s !== 'object') return '';
+  const day = (s.day || '').trim();
+  const time = (s.time || '').trim();
+  const pace = (s.pace || '').trim();
+  const distance = (s.distance || '').trim();
+  const parts = [];
+  if (day || time) parts.push(`${day} ${time}`.trim());
+  if (pace) parts.push(`Pace ${pace}`);
+  if (distance) parts.push(`Strecke ${distance}`);
+  return parts.join(' | ');
+}
+
 function buildMailText({
   name, plzcity, instagram, email, host, about,
-  meeting, scheduleText, distance, pace, consent
+  meeting, tagRows, consent
 }) {
   return [
     `Name: ${name}`,
@@ -68,9 +80,13 @@ function buildMailText({
     `Über uns: ${about || '-'}`,
     `---`,
     `Treffpunkt: ${meeting}`,
-    `Tage/Uhrzeiten: ${scheduleText}`,
-    `Strecke: ${distance || 'Keine Angabe'}`,
-    `Pace: ${pace || '-'}`,
+    `Tag 1: ${tagRows[0] || ''}`,
+    `Tag 2: ${tagRows[1] || ''}`,
+    `Tag 3: ${tagRows[2] || ''}`,
+    `Tag 4: ${tagRows[3] || ''}`,
+    `Tag 5: ${tagRows[4] || ''}`,
+    `Tag 6: ${tagRows[5] || ''}`,
+    `Tag 7: ${tagRows[6] || ''}`,
     `Einwilligung: ${consent ? 'Ja' : 'Nein'}`
   ].join('\n');
 }
@@ -90,7 +106,7 @@ app.post('/api/register', async (req, res) => {
   try {
     const {
       name, plzcity, instagram, email, host, about,
-      meeting, schedule, distance, pace, consent
+      meeting, schedule, consent
     } = req.body || {};
 
     const scheduleValid = Array.isArray(schedule) && schedule.length > 0 &&
@@ -99,7 +115,7 @@ app.post('/api/register', async (req, res) => {
     if (!name || !plzcity || !instagram || !email || !host || !meeting || !consent || !scheduleValid) {
       return res.status(400).json({
         error: 'missing_fields',
-        detail: DEV ? 'Erforderlich: name, plzcity, instagram, email, host, meeting, consent=true, schedule[{day,time}]' : undefined
+        detail: DEV ? 'Erforderlich: name, plzcity, instagram, email, host, meeting, consent=true, schedule[{day,time,(pace?),(distance?)}]' : undefined
       });
     }
     if (!isEmail(email)) {
@@ -112,12 +128,18 @@ app.post('/api/register', async (req, res) => {
       return res.status(500).json({ error: 'mail_not_configured' });
     }
 
-    const scheduleText = schedule.map(s => `${s.day} ${s.time}`).join('; ');
+    // Wir speichern die einzelnen Tage im Token → später in Sheets als Tag 1..7
+    const tagRows = Array.from({length:7}, (_,i) => formatTagRow(schedule[i] || null));
+
     const payload = {
       name, plzcity, instagram, email, host, about,
-      meeting, schedule, distance: distance || '', pace: pace || '',
-      consent: !!consent, ts: new Date().toISOString()
+      meeting,
+      schedule,                 // strukturiert
+      tagRows,                  // formatiert für Sheet-Spalten
+      consent: !!consent,
+      ts: new Date().toISOString()
     };
+
     const token = createConfirmToken(payload);
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const confirmUrl = `${baseUrl}/api/confirm?token=${encodeURIComponent(token)}`;
@@ -128,7 +150,10 @@ app.post('/api/register', async (req, res) => {
     });
 
     const subject = `Neue Run-Club-Anmeldung: ${name}`;
-    const text = buildMailText({ ...payload, scheduleText });
+    const text = buildMailText({
+      name, plzcity, instagram, email, host, about,
+      meeting, tagRows, consent
+    });
     const html = `
       <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:640px;margin:auto;">
         <h2 style="margin:0 0 12px;">Neue Run-Club-Anmeldung</h2>
@@ -196,18 +221,33 @@ app.get('/api/confirm', async (req, res) => {
       return res.status(400).send(htmlPage('Ungültiger oder abgelaufener Bestätigungslink ❌'));
     }
 
-    const scheduleText = Array.isArray(data.schedule)
-      ? data.schedule.map(s => `${s.day} ${s.time}`).join('; ')
-      : '';
+    // Tag-Zeilen (formatiert) – falls im Token noch nicht vorhanden, on-the-fly erzeugen
+    const tagRows = Array.isArray(data.tagRows) && data.tagRows.length
+      ? data.tagRows
+      : Array.from({length:7}, (_,i) => formatTagRow((data.schedule || [])[i] || null));
 
     let sheetsOk = false;
     if (process.env.APPS_SCRIPT_URL && process.env.SHEETS_SECRET) {
+      // Payload auf neue Spalten mappen: Tag 1 .. Tag 7
       const payload = {
         token: process.env.SHEETS_SECRET,
-        name: data.name, plzcity: data.plzcity, instagram: data.instagram, email: data.email,
-        host: data.host, about: data.about, meeting: data.meeting,
-        datetime: scheduleText, distance: data.distance || '', pace: data.pace || '',
-        consent: !!data.consent, ts: data.ts || new Date().toISOString()
+        name: data.name,
+        plzcity: data.plzcity,
+        instagram: data.instagram,
+        email: data.email,
+        host: data.host,
+        about: data.about,
+        meeting: data.meeting,
+        // neue Tag-Spalten:
+        'Tag 1': tagRows[0] || '',
+        'Tag 2': tagRows[1] || '',
+        'Tag 3': tagRows[2] || '',
+        'Tag 4': tagRows[3] || '',
+        'Tag 5': tagRows[4] || '',
+        'Tag 6': tagRows[5] || '',
+        'Tag 7': tagRows[6] || '',
+        consent: !!data.consent,
+        ts: data.ts || new Date().toISOString()
       };
 
       const hasGlobalFetch = typeof fetch === 'function';

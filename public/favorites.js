@@ -1,6 +1,6 @@
 // favorites.js
 document.addEventListener('DOMContentLoaded', () => {
-  /* ===== Menü (gleiches Verhalten wie auf anderen Seiten) ===== */
+  /* ===== Menü ===== */
   (function setupMenu(){
     const menu = document.getElementById('mainMenu');
     const btn  = document.getElementById('menuButton');
@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function comingSoon(){ alert('Der Online Shop kommt bald :)'); }
 
-    // Logo klickbar → Hinweis
     const brandLogo = document.getElementById('brand-logo');
     if (brandLogo) {
       brandLogo.style.cursor = 'pointer';
@@ -27,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
       else if (v === 'find') location.href = 'find.html';
       else if (v === 'register') location.href = 'register.html';
       else if (v === 'favs') location.href = 'favorites.html';
-      else if (v === 'shop') comingSoon(); // geändert
+      else if (v === 'shop') comingSoon();
     }
 
     btn.addEventListener('click', (e) => {
@@ -53,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   })();
 
-  /* ===== Favoriten lesen/rendern (unverändert) ===== */
+  /* ===== Favoriten lesen/rendern ===== */
   const FAV_KEY = 'favorites:v1';
   function readFavs() {
     try { return JSON.parse(localStorage.getItem(FAV_KEY)) || {}; }
@@ -66,10 +65,30 @@ document.addEventListener('DOMContentLoaded', () => {
   function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
   function escapeAttr(s){ return String(s||'').replace(/"/g,'&quot;'); }
 
+  function scheduleTableHtml(schedule) {
+    if (!schedule || schedule.length === 0) return '<div><small>—</small></div>';
+    const head = `
+      <div class="schedule-table">
+        <div class="head">Tag</div>
+        <div class="head">Uhrzeit</div>
+        <div class="head">Pace</div>
+        <div class="head">Strecke</div>
+        ${schedule.map(s=>`
+          <div class="row"></div>
+          <div>${escapeHtml(s.day || '')}</div>
+          <div>${escapeHtml(s.time || '')}</div>
+          <div class="${s.paceText?'':'muted'}">${escapeHtml(s.paceText || '–')}</div>
+          <div class="${s.distanceText?'':'muted'}">${escapeHtml(s.distanceText || '–')}</div>
+        `).join('')}
+      </div>
+    `;
+    return head;
+  }
+
   function render() {
     const list = document.getElementById('favorites-list');
-    const map = readFavs();
-    const clubs = Object.values(map);
+    const mapObj = readFavs();
+    const clubs = Object.values(mapObj);
 
     if (!clubs.length) {
       list.innerHTML = '<div class="helper">Du hast noch keine Favoriten gespeichert.</div>';
@@ -77,8 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     list.innerHTML = clubs.map(c => {
-      const sched = (c.schedule||[]).map(s => `${s.day} ${s.time}`).join(' · ') || '—';
-
       const contactLine = (c.contactLabel && c.contactText)
         ? `<div><small>${c.contactLabel}: ${
             c.contactHref
@@ -109,15 +126,79 @@ document.addEventListener('DOMContentLoaded', () => {
             <strong>${escapeHtml(c.name || 'Unbenannt')}</strong>
             <div>${escapeHtml(c.plzcity || '')}</div>
             <div>${escapeHtml(c.meeting || '')}</div>
-            <div><small>${sched}</small></div>
-            ${c.pace ? `<div><small>Pace: ${escapeHtml(c.pace)}</small></div>` : ''}
-            ${c.distance ? `<div><small>Strecke: ${escapeHtml(c.distance)}</small></div>` : ''}
+
+            ${scheduleTableHtml(c.schedule)}
             ${contactLine}
           </div>
           ${aboutCol}
         </div>
       `;
     }).join('');
+
+    // Karte rechts mit nur Favoriten
+    renderMap(clubs);
+  }
+
+  /* ===== Karte rechts nur mit Favoriten ===== */
+  let mapInst = null;
+  let markers = [];
+  function clearMarkers() { markers.forEach(m => mapInst.removeLayer(m)); markers = []; }
+
+  async function geocode(plzcity, meeting) {
+    const s = [meeting, plzcity].filter(Boolean).join(', ');
+    const key = 'geo:fav:' + s.toLowerCase();
+    const cached = localStorage.getItem(key);
+    if (cached) {
+      try { const p = JSON.parse(cached); if (p && typeof p.lat==='number' && typeof p.lng==='number') return [p.lat,p.lng]; } catch {}
+    }
+    const base = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=de';
+    const url  = `${base}&q=${encodeURIComponent(s + ', Germany')}`;
+    try {
+      const r = await fetch(url, { headers: { 'Accept':'application/json','Accept-Language':'de' }});
+      const data = await r.json();
+      if (Array.isArray(data) && data[0]) {
+        const lat = parseFloat(data[0].lat), lng = parseFloat(data[0].lon);
+        if (isFinite(lat) && isFinite(lng)) {
+          localStorage.setItem(key, JSON.stringify({lat,lng}));
+          return [lat,lng];
+        }
+      }
+    } catch {}
+    return null;
+  }
+
+  async function renderMap(clubs) {
+    const mapEl = document.getElementById('fav-map');
+    if (!mapEl) {
+      // Falls das Element noch nicht existiert, in die rechte Spalte einbauen (falls du es dort platzieren willst)
+      const right = document.querySelector('#page-favorites .right-col');
+      if (!right) return;
+      const m = document.createElement('div');
+      m.id = 'fav-map';
+      right.innerHTML = '';
+      right.appendChild(m);
+    }
+
+    if (!mapInst) {
+      mapInst = L.map('fav-map').setView([51.1657, 10.4515], 6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution:'&copy; OpenStreetMap'
+      }).addTo(mapInst);
+    }
+
+    clearMarkers();
+    if (!clubs.length) return;
+
+    const bounds = L.latLngBounds();
+    for (const c of clubs) {
+      const pt = await geocode(c.plzcity, c.meeting);
+      if (!pt) continue;
+      const m = L.marker(pt).addTo(mapInst)
+        .bindPopup(`<strong>${escapeHtml(c.name)}</strong><br>${escapeHtml(c.meeting||'')}<br>${escapeHtml(c.plzcity||'')}`);
+      markers.push(m);
+      bounds.extend(pt);
+    }
+    if (bounds.isValid()) mapInst.fitBounds(bounds.pad(0.2));
   }
 
   document.getElementById('favorites-list')?.addEventListener('click', (e) => {

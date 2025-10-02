@@ -1,34 +1,31 @@
-// register.js
 document.addEventListener('DOMContentLoaded', () => {
   /* ===== Menü (Hover öffnet, Klick pinnt) ===== */
   (function setupMenu(){
     const menu = document.getElementById('mainMenu');
     const btn  = document.getElementById('menuButton');
     const list = document.getElementById('menuList');
-
-    function comingSoon(){ alert('Der Online Shop kommt bald :)'); }
-
-    // Logo klickbar → Hinweis
-    const brandLogo = document.getElementById('brand-logo');
-    if (brandLogo) {
-      brandLogo.style.cursor = 'pointer';
-      brandLogo.addEventListener('click', (e) => {
-        e.preventDefault();
-        comingSoon();
-      });
-    }
+    // Logo klickbar → Shop
+const brandLogo = document.getElementById('brand-logo');
+if (brandLogo) {
+  brandLogo.style.cursor = 'pointer';
+  brandLogo.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = 'shop.html';
+  });
+}
 
     if (!menu || !btn || !list) return;
 
+    // A11y: Button mit Liste verbinden
     if (!btn.getAttribute('aria-controls')) btn.setAttribute('aria-controls', 'menuList');
 
     function goNav(v) {
-      if (v === 'home') window.location.href = 'index.html';
-      else if (v === 'find') window.location.href = 'find.html';
-      else if (v === 'register') window.location.href = 'register.html';
-      else if (v === 'favs') window.location.href = 'favorites.html';
-      else if (v === 'shop') comingSoon(); // geändert
-    }
+  if (v === 'home') window.location.href = 'index.html';
+  else if (v === 'find') window.location.href = 'find.html';
+  else if (v === 'register') window.location.href = 'register.html';
+  else if (v === 'favs') window.location.href = 'favorites.html';
+  else if (v === 'shop') window.location.href = 'shop.html';
+}
 
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -45,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.focus();
     });
 
+    // Outside-Click nur außerhalb schließen
     document.addEventListener('click', (e) => {
       if (menu.classList.contains('pinned') && !menu.contains(e.target)) {
         menu.classList.remove('pinned');
@@ -61,10 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   })();
 
-  /* ===== Formular-Logik (unverändert) ===== */
+  /* ===== Formular-Logik ===== */
   const form = document.getElementById('register-form');
   const errorEl = document.getElementById('form-error');
 
+  // erst NACH Klick auf "Eintragen" validieren
   let triedSubmit = false;
   let isSubmitting = false;
 
@@ -73,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const getEl = id => document.getElementById(id);
   const val = id => (getEl(id)?.value || '').trim();
 
+  // Einwilligung
   const consentBox = getEl('rc-consent');
   const consentError = getEl('consent-error');
   const isConsentOk = () => !!(consentBox && consentBox.checked);
@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     consentError.style.display = isConsentOk() ? 'none' : 'block';
   };
 
+  // Wortlimit (200 Wörter)
   const about = getEl('rc-about'); const counter = getEl('about-counter');
   function updateWordCounter() {
     if (!about || !counter) return;
@@ -91,8 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (about && counter) { about.addEventListener('input', updateWordCounter); updateWordCounter(); }
 
+  // E-Mail-Check (einfach, pragmatisch)
   const emailValid = () => /\S+@\S+\.\S+/.test(val('rc-email'));
 
+  // ===== Tag & Uhrzeit + Pace & Dist: Auswahl + dynamische Felder =====
   const slug = d => ({
     Montag:'mo', Dienstag:'di', Mittwoch:'mi', Donnerstag:'do',
     Freitag:'fr', Samstag:'sa', Sonntag:'so'
@@ -104,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const fieldsWrap = getEl('daytime-fields');
   const daytimeError = getEl('daytime-error');
 
+  // Button A11y
   if (openPickerBtn && !openPickerBtn.getAttribute('aria-controls')) {
     openPickerBtn.setAttribute('aria-controls', 'weekdayPanel');
   }
@@ -127,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     panel.hidden = false;
     openPickerBtn?.setAttribute('aria-expanded', 'true');
     syncPanelCheckboxesFromState();
+    // Fokus auf erstes Kontrollkästchen
     const firstCb = panel.querySelector('input[type="checkbox"]');
     firstCb?.focus({ preventScroll: false });
   }
@@ -142,30 +147,47 @@ document.addEventListener('DOMContentLoaded', () => {
     panel.hidden ? openPanel() : closePanel();
   });
 
+  // Klicke außerhalb -> schließen
   document.addEventListener('click', (e) => {
     if (!panel || panel.hidden) return;
     const within = panel.contains(e.target) || openPickerBtn.contains(e.target);
     if (!within) closePanel();
   });
 
+  // Escape schließt Panel
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && panel && !panel.hidden) {
       closePanel();
     }
   });
 
+  // *** NEU: kompakte Zeilen direkt "Tag – Uhrzeit – Pace – Strecke" ***
   function renderDaytimeFields() {
     fieldsWrap.innerHTML = '';
     Array.from(selectedDays).forEach(day => {
-      const id = `time-${slug(day)}`;
+      const idBase = slug(day);
+      const timeId = `time-${idBase}`;
+      const paceId = `pace-${idBase}`;
+      const distId = `dist-${idBase}`;
+
       const row = document.createElement('div');
       row.className = 'daytime-row';
       row.innerHTML = `
-        <label for="${id}">${day} um</label>
-        <input id="${id}" type="time" placeholder="--:--">
+        <span class="day-label">${day}</span>
+        <input id="${timeId}" type="time" placeholder="--:--" required>
+        <input id="${paceId}" type="text" inputmode="numeric" placeholder="Pace (z. B. 5:30-6:10)" class="pace-input">
+        <select id="${distId}" class="dist-select">
+          <option value="">Strecke (optional)</option>
+          <option>1-5 km</option>
+          <option>5-10 km</option>
+          <option>10-15 km</option>
+          <option>10-20 km</option>
+          <option>Ab 20 km</option>
+        </select>
       `;
       fieldsWrap.appendChild(row);
     });
+    // Listener für Validierung
     fieldsWrap.querySelectorAll('input[type="time"]').forEach(inp => {
       inp.addEventListener('input', () => { if (triedSubmit) updateDaytimeError(); });
       inp.addEventListener('change', () => { if (triedSubmit) updateDaytimeError(); });
@@ -174,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (confirmWeekdaysBtn) {
     confirmWeekdaysBtn.addEventListener('click', () => {
+      // Selektionen übernehmen
       panel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
         if (cb.checked) selectedDays.add(cb.value); else selectedDays.delete(cb.value);
       });
@@ -199,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
     daytimeError.style.display = daytimeValid() ? 'none' : 'block';
   }
 
+  // Pflichtfelder-Fehler
   function allRequiredFilled() {
     const basicsOk = requiredIds.every(id => val(id).length > 0) && emailValid();
     return basicsOk && daytimeValid();
@@ -209,6 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
     errorEl.style.display = allRequiredFilled() ? 'none' : 'block';
   };
 
+  // Live-Events: erst NACH fehlgeschlagenem Submit reagieren
   requiredIds.forEach(id => {
     const el = getEl(id);
     if (el) {
@@ -218,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (consentBox) consentBox.addEventListener('change', () => { if (triedSubmit) updateConsentError(); });
 
+  // Erfolgsbanner (einmal tippen)
   function typeOnce(el, text, durationMs=3000) {
     const speed = Math.max(10, Math.floor(durationMs / Math.max(1, text.length)));
     let i = 0;
@@ -237,10 +263,9 @@ document.addEventListener('DOMContentLoaded', () => {
     return res.json();
   }
 
-  const formEl = document.getElementById('register-form');
-  formEl.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmitting) return; // Doppel-Submit verhindern
     triedSubmit = true;
 
     const okFields = allRequiredFilled();
@@ -251,23 +276,30 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDaytimeError();
 
     if (!okFields || !okConsent) {
+      // Fokus auf erstes fehlerhaftes Feld
       const firstEmpty = requiredIds.map(getEl).find(el => el && !el.value.trim());
       if (firstEmpty) { firstEmpty.focus({preventScroll:false}); return; }
 
+      // Ungültige E-Mail explizit fokussieren
       if (!emailValid()) { getEl('rc-email')?.focus({preventScroll:false}); return; }
 
-      const slugMap = { Montag:'mo', Dienstag:'di', Mittwoch:'mi', Donnerstag:'do', Freitag:'fr', Samstag:'sa', Sonntag:'so' };
+      // Fehlende Uhrzeit -> erstes Zeitfeld
       const firstDay = Array.from(selectedDays)[0];
-      if (firstDay) { getEl(`time-${slugMap[firstDay]||firstDay.toLowerCase()}`)?.focus({preventScroll:false}); return; }
+      if (firstDay) { getEl(`time-${slug(firstDay)}`)?.focus({preventScroll:false}); return; }
 
+      // Einwilligung fehlt
       if (consentBox && !okConsent) { consentBox.focus({preventScroll:false}); }
       return;
     }
 
-    const schedule = Array.from(selectedDays).map(day => ({
-      day,
-      time: (getEl(`time-${slug(day)}`)?.value || '').trim()
-    }));
+    // Schedule bauen (mit pace/distance pro Tag)
+    const schedule = Array.from(selectedDays).map(day => {
+      const base = slug(day);
+      const time = (getEl(`time-${base}`)?.value || '').trim();
+      const pace = (getEl(`pace-${base}`)?.value || '').trim();
+      const dist = (getEl(`dist-${base}`)?.value || '').trim();
+      return { day, time, pace, distance: dist };
+    });
 
     const payload = {
       name: val('rc-name'),
@@ -277,19 +309,20 @@ document.addEventListener('DOMContentLoaded', () => {
       host: val('rc-host'),
       about: val('rc-about'),
       meeting: val('rc-meeting'),
-      schedule,
-      distance: val('rc-distance'),
-      pace: val('rc-pace'),
+      schedule,                // {day,time,pace,distance}
+      distance: '',            // leer – nicht mehr global
+      pace: '',                // leer – nicht mehr global
       consent: true,
     };
 
-    const submitBtn = formEl.querySelector('.btn-submit');
+    const submitBtn = form.querySelector('.btn-submit');
     try {
       isSubmitting = true;
       if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Wird gesendet…'; }
 
       await postForm(payload);
 
+      // Erfolgsmeldung tippen + oben einblenden
       const wrap = document.getElementById('submit-success');
       const typer = document.getElementById('submit-typer');
       if (wrap && typer) {
@@ -299,8 +332,9 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      formEl.reset();
-      triedSubmit = false;
+      // Formular resetten
+      form.reset();
+      triedSubmit = false; // Reset, damit Fehler nicht direkt wieder angezeigt werden
       selectedDays.clear();
       renderDaytimeFields();
       updateOpenButtonLabel();

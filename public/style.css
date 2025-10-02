@@ -385,11 +385,11 @@ button.btn {
 
 /* Ergebnisseite (Run Clubs finden) */
 .results-wrap { display: flex; flex-direction: column; gap: 14px; height: 100%; }
-#map {
+#map, #fav-map {
   width: 100%; height: 50%; min-height: 260px; border-radius: 10px; overflow: hidden;
   background: #e9ecef; box-shadow: 0 6px 22px rgba(0,0,0,0.5);
 }
-#clubs-list {
+#clubs-list, #favorites-list {
   flex: 1; overflow: auto; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px;
   padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #0c0c0c;
 }
@@ -418,6 +418,24 @@ button.btn {
     border-left: 1px solid rgba(255,255,255,0.08);
     padding-left: 12px;
   }
+}
+
+/* Schedule-Tabelle (Tag | Zeit | Pace | Strecke) für Find & Favoriten */
+.schedule-table{ display:grid; grid-template-columns: auto auto 1fr 1fr; gap:6px 12px; margin-top:6px; }
+.schedule-table .head{ font-size:12px; opacity:.75; }
+.schedule-table .muted{ opacity:.6; }
+.schedule-table .row{ display:contents; }
+
+.daytime-combo {
+  display: grid;
+  grid-template-columns: 160px 1fr 180px;
+  gap: 10px;
+  align-items: center;
+}
+.pace-input { background:#0f0f0f; border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:10px 12px; color:#fff; }
+.dist-select { background:#0f0f0f; border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:10px 12px; color:#fff; }
+@media (max-width: 520px){
+  .daytime-combo { grid-template-columns: 1fr; }
 }
 
 /* === Find-Seite: rechte Spalte als Flex-Column; Map fix, Liste scrollt === */
@@ -570,21 +588,28 @@ main { position: relative; }
 #page-register .left-col,
 #page-register .right-col { height: auto; overflow: visible; }
 
-/* ===== Favoriten-Seite: Layout ===== */
+/* ===== Favoriten-Seite: zweispaltig + Karte ===== */
 #page-favorites main {
   height: auto;
   min-height: calc(100vh - var(--header-height));
-  flex-direction: column;
-  padding: 0 16px 16px;
-  gap: 0;
+  flex-direction: row;
+  padding: 20px;
+  gap: 20px;
 }
 #page-favorites .left-col {
-  flex: 1 1 auto;
+  flex: 0 0 50%;
   height: auto;
-  overflow: visible;
-  padding-top: 0;
+  overflow: auto;
+  padding-top: 24px;
 }
-#page-favorites .right-col { display: none; }
+#page-favorites .right-col {
+  display: block;
+  flex: 0 0 50%;
+  height: auto;
+  overflow: hidden;
+}
+#page-favorites #fav-map { height: 320px; flex: 0 0 auto; }
+
 /* Liste der Favoriten */
 #favorites-list {
   border: 1px solid rgba(255,255,255,0.06);
@@ -687,6 +712,11 @@ main { position: relative; }
     padding-right: 12px;
   }
   #page-register #register-form .right-col h2 { margin-top: 16px; }
+
+  /* Favoriten mobil untereinander */
+  #page-favorites main { flex-direction: column; padding: 0 16px 16px; gap: 0; }
+  #page-favorites .left-col { flex: 1 1 auto; height: auto; overflow: visible; padding-top: 0; }
+  #page-favorites .right-col { display: block; }
 }
 
 /* ===== Favoriten-Herz + Tooltip ===== */

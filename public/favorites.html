@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Meine Favoriten • Stride Athletes</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 </head>
 <body id="page-favorites">
   <header>
@@ -16,12 +17,12 @@
           <svg aria-hidden="true" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <ul class="menu-list" id="menuList" role="menu">
-  <li role="none"><button role="menuitem" class="menu-item" data-nav="home">🏠 Startseite</button></li>
-  <li role="none"><button role="menuitem" class="menu-item" data-nav="find">🏃‍♂️ Run Clubs finden</button></li>
-  <li role="none"><button role="menuitem" class="menu-item" data-nav="register">📝 Run Club kostenlos registrieren</button></li>
-  <li role="none"><button role="menuitem" class="menu-item" data-nav="favs">❤️ Meine Favoriten</button></li>
-  <li role="none"><button role="menuitem" class="menu-item" data-nav="shop">🛒 Stride Athletes Online-Shop</button></li>
-</ul>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="home"> Startseite</button></li>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="find"> Run Clubs finden</button></li>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="register"> Run Club kostenlos registrieren</button></li>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="favs"> Meine Favoriten</button></li>
+          <li role="none"><button role="menuitem" class="menu-item" data-nav="shop"> Stride Athletes Online-Shop</button></li>
+        </ul>
       </nav>
     </div>
     <div class="header-right">
@@ -36,29 +37,32 @@
   </header>
 
   <main>
-  <!-- Linke Spalte: Zurück-Button, Überschrift, Liste -->
-  <section class="left-col" aria-label="Gespeicherte Clubs">
-    <a href="index.html" class="back-btn">← Zurück</a>
-    <h2>Gespeicherte Clubs</h2>
-    <div id="favorites-list"></div>
-  </section>
-</main>
+    <!-- Linke Spalte: Zurück-Button, Überschrift, Liste -->
+    <section class="left-col" aria-label="Gespeicherte Clubs">
+      <a href="index.html" class="back-btn">← Zurück</a>
+      <h2>Gespeicherte Clubs</h2>
+      <div id="favorites-list"></div>
+    </section>
 
+    <!-- Rechte Spalte: Karte nur mit Favoriten -->
+    <section class="right-col" aria-label="Karte">
+      <div class="results-wrap">
+        <h2>Karte</h2>
+        <div id="fav-map"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
   <script src="favorites.js" defer></script>
 
   <footer class="site-footer" role="contentinfo">
-  <div class="footer-inner">
-    <a href="impressum.html">Impressum</a>
-    <span aria-hidden="true">·</span>
-    <a href="datenschutz.html">Datenschutzerklärung</a>
-    <!-- Optional, erst wenn vorhanden:
-    <span aria-hidden="true">·</span>
-    <a href="agb.html">AGB</a>
-    <span aria-hidden="true">·</span>
-    <a href="widerruf.html">Widerruf</a>
-    -->
-  </div>
-</footer>
+    <div class="footer-inner">
+      <a href="impressum.html">Impressum</a>
+      <span aria-hidden="true">·</span>
+      <a href="datenschutz.html">Datenschutzerklärung</a>
+    </div>
+  </footer>
 
 </body>
 </html>
