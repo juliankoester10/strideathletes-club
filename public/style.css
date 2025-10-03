@@ -74,7 +74,6 @@ header {
   .header-actions { display: inline-flex; }
 }
 
-
 .brand-title{
   white-space: nowrap;
   text-wrap: nowrap;
@@ -536,13 +535,39 @@ header:has(.brand-title) .header-left .menu { align-self: flex-start; }
 }
 .weekday-actions { margin-top: 12px; display: flex; justify-content: flex-end; }
 
-.daytime-fields { display: grid; gap: 10px; margin-top: 12px; }
-.daytime-row { display: grid; grid-template-columns: 1fr 160px; align-items: center; gap: 10px; }
-.daytime-row input[type="time"] {
-  background: #0f0f0f; color: var(--white);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 10px; padding: 10px 12px; font-size: 16px;
+/* ======== NEU: Tageszeilen (Register) — Felder unter dem Tag + „um“ vor Uhrzeit ======== */
+.daytime-fields { display: grid; gap: 12px; margin-top: 12px; }
+.daytime-row {
+  display: grid;
+  grid-template-columns: 1fr;      /* immer einspaltig (Desktop & Mobile) */
+  gap: 8px;
+  align-items: start;
 }
+.daytime-row .day-label {
+  font-weight: 800;
+}
+
+/* „um“ direkt unter dem Tag als Label vor der Uhrzeit */
+.daytime-row .day-label::after {
+  content: "um";
+  display: inline-block;
+  margin: 6px 8px 0 0;
+  padding: 2px 0;
+  font-size: 14px;
+  color: rgba(255,255,255,0.86);
+}
+
+/* Inputs kommen darunter in der Reihenfolge: time, pace, dist */
+.daytime-row input[type="time"],
+.daytime-row .pace-input,
+.daytime-row .dist-select {
+  width: 100%;
+}
+
+/* Abstände zwischen den drei Feldern */
+.daytime-row input[type="time"] { margin-top: -2px; } /* schließt an „um“ an */
+.daytime-row .pace-input { }
+.daytime-row .dist-select { }
 
 /* ===== Erfolgsmeldung (Register): oben mittig, Typing-Caret) ===== */
 main { position: relative; }
@@ -1112,4 +1137,23 @@ body#page-shop { padding-bottom: 64px; } /* Platz für Cart-Bar nur auf Shop-Sei
 /* ============ NEU: Mehr Platz unten für fixe Cart-Bar damit Footer sichtbar bleibt ============ */
 #page-shop main, #page-product .product-main, #page-cart .cart-main {
   padding-bottom: 140px;
+}
+/* === Fix: kein "um" am Tageslabel + mehr Abstand unter dem Tag === */
+.daytime-row .day-label::after {
+  content: none !important;   /* entfernt das angehängte "um" hinter z.B. "Freitag" */
+}
+
+.daytime-fields {
+  gap: 16px !important;       /* etwas mehr Abstand zwischen den Tagen */
+}
+
+.daytime-row {
+  gap: 10px !important;       /* mehr Luft innerhalb eines Tagesblocks */
+}
+
+/* Inputs unter dem Tag: etwas Abstand nach oben für eine angenehmere Staffelung */
+.daytime-row input[type="time"],
+.daytime-row .pace-input,
+.daytime-row .dist-select {
+  margin-top: 8px !important;
 }

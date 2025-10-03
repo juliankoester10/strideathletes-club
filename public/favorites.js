@@ -168,38 +168,47 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function renderMap(clubs) {
-    const mapEl = document.getElementById('fav-map');
-    if (!mapEl) {
-      // Falls das Element noch nicht existiert, in die rechte Spalte einbauen (falls du es dort platzieren willst)
-      const right = document.querySelector('#page-favorites .right-col');
-      if (!right) return;
-      const m = document.createElement('div');
-      m.id = 'fav-map';
-      right.innerHTML = '';
-      right.appendChild(m);
-    }
+  const mapEl = document.getElementById('fav-map');
+  if (!mapEl) return;
 
-    if (!mapInst) {
-      mapInst = L.map('fav-map').setView([51.1657, 10.4515], 6);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution:'&copy; OpenStreetMap'
-      }).addTo(mapInst);
-    }
+  // Map einmalig anlegen
+  if (!mapInst) {
+    mapInst = L.map('fav-map', { zoomControl: true }).setView([51.1657, 10.4515], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'&copy; OpenStreetMap'
+    }).addTo(mapInst);
 
-    clearMarkers();
-    if (!clubs.length) return;
-
-    const bounds = L.latLngBounds();
-    for (const c of clubs) {
-      const pt = await geocode(c.plzcity, c.meeting);
-      if (!pt) continue;
-      const m = L.marker(pt).addTo(mapInst)
-        .bindPopup(`<strong>${escapeHtml(c.name)}</strong><br>${escapeHtml(c.meeting||'')}<br>${escapeHtml(c.plzcity||'')}`);
-      markers.push(m);
-      bounds.extend(pt);
-    }
-    if (bounds.isValid()) mapInst.fitBounds(bounds.pad(0.2));
+    // WICHTIG: nach Layout/Resize sicherstellen, dass Leaflet die Größe kennt
+    setTimeout(() => mapInst.invalidateSize(), 0);
+    window.addEventListener('resize', () => mapInst && mapInst.invalidateSize());
   }
+
+  clearMarkers();
+  if (!clubs.length) return;
+
+  // Geocodes parallel laden
+  const pts = await Promise.all(clubs.map(async (c) => ({
+    club: c,
+    pt: await geocode(c.plzcity, c.meeting) // [lat,lng] oder null
+  })));
+
+  const bounds = L.latLngBounds();
+  for (const { club: c, pt } of pts) {
+    if (!pt) continue;
+    // robustes Icon (falls Standardicons mal nicht laden): CircleMarker
+    const m = L.circleMarker(pt, { radius: 7, weight: 2, opacity: 1, fillOpacity: 0.9 })
+      .addTo(mapInst)
+      .bindPopup(`<strong>${escapeHtml(c.name)}</strong><br>${escapeHtml(c.meeting||'')}<br>${escapeHtml(c.plzcity||'')}`);
+    markers.push(m);
+    bounds.extend(pt);
+  }
+
+  if (bounds.isValid()) {
+    mapInst.fitBounds(bounds.pad(0.2));
+    // nach FitBounds erneut sicherstellen
+    setTimeout(() => mapInst.invalidateSize(), 0);
+  }
+}
 
   document.getElementById('favorites-list')?.addEventListener('click', (e) => {
     const btn = e.target.closest('.fav-btn'); if (!btn) return;

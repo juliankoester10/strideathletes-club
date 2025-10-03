@@ -5,14 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn  = document.getElementById('menuButton');
     const list = document.getElementById('menuList');
     // Logo klickbar → Shop
-const brandLogo = document.getElementById('brand-logo');
-if (brandLogo) {
-  brandLogo.style.cursor = 'pointer';
-  brandLogo.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.location.href = 'shop.html';
-  });
-}
+    const brandLogo = document.getElementById('brand-logo');
+    if (brandLogo) {
+      brandLogo.style.cursor = 'pointer';
+      brandLogo.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'shop.html';
+      });
+    }
 
     if (!menu || !btn || !list) return;
 
@@ -20,12 +20,12 @@ if (brandLogo) {
     if (!btn.getAttribute('aria-controls')) btn.setAttribute('aria-controls', 'menuList');
 
     function goNav(v) {
-  if (v === 'home') window.location.href = 'index.html';
-  else if (v === 'find') window.location.href = 'find.html';
-  else if (v === 'register') window.location.href = 'register.html';
-  else if (v === 'favs') window.location.href = 'favorites.html';
-  else if (v === 'shop') window.location.href = 'shop.html';
-}
+      if (v === 'home') window.location.href = 'index.html';
+      else if (v === 'find') window.location.href = 'find.html';
+      else if (v === 'register') window.location.href = 'register.html';
+      else if (v === 'favs') window.location.href = 'favorites.html';
+      else if (v === 'shop') window.location.href = 'shop.html';
+    }
 
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -131,7 +131,6 @@ if (brandLogo) {
     panel.hidden = false;
     openPickerBtn?.setAttribute('aria-expanded', 'true');
     syncPanelCheckboxesFromState();
-    // Fokus auf erstes Kontrollkästchen
     const firstCb = panel.querySelector('input[type="checkbox"]');
     firstCb?.focus({ preventScroll: false });
   }
@@ -147,21 +146,19 @@ if (brandLogo) {
     panel.hidden ? openPanel() : closePanel();
   });
 
-  // Klicke außerhalb -> schließen
   document.addEventListener('click', (e) => {
     if (!panel || panel.hidden) return;
     const within = panel.contains(e.target) || openPickerBtn.contains(e.target);
     if (!within) closePanel();
   });
 
-  // Escape schließt Panel
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && panel && !panel.hidden) {
       closePanel();
     }
   });
 
-  // *** NEU: kompakte Zeilen direkt "Tag – Uhrzeit – Pace – Strecke" ***
+  // *** Neu: Felder unter dem Wochentag, inkl. "um" vor der Uhrzeit (Desktop & Mobil) ***
   function renderDaytimeFields() {
     fieldsWrap.innerHTML = '';
     Array.from(selectedDays).forEach(day => {
@@ -173,17 +170,20 @@ if (brandLogo) {
       const row = document.createElement('div');
       row.className = 'daytime-row';
       row.innerHTML = `
-        <span class="day-label">${day}</span>
-        <input id="${timeId}" type="time" placeholder="--:--" required>
-        <input id="${paceId}" type="text" inputmode="numeric" placeholder="Pace (z. B. 5:30-6:10)" class="pace-input">
-        <select id="${distId}" class="dist-select">
-          <option value="">Strecke (optional)</option>
-          <option>1-5 km</option>
-          <option>5-10 km</option>
-          <option>10-15 km</option>
-          <option>10-20 km</option>
-          <option>Ab 20 km</option>
-        </select>
+        <div class="day-label">${day}</div>
+        <div class="day-fields">
+          <span class="time-prefix">um</span>
+          <input id="${timeId}" type="time" placeholder="--:--" required>
+          <input id="${paceId}" type="text" inputmode="numeric" placeholder="Pace (z. B. 5:30-6:10)" class="pace-input">
+          <select id="${distId}" class="dist-select">
+            <option value="">Strecke (optional)</option>
+            <option>1-5 km</option>
+            <option>5-10 km</option>
+            <option>10-15 km</option>
+            <option>10-20 km</option>
+            <option>Ab 20 km</option>
+          </select>
+        </div>
       `;
       fieldsWrap.appendChild(row);
     });
@@ -196,7 +196,6 @@ if (brandLogo) {
 
   if (confirmWeekdaysBtn) {
     confirmWeekdaysBtn.addEventListener('click', () => {
-      // Selektionen übernehmen
       panel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
         if (cb.checked) selectedDays.add(cb.value); else selectedDays.delete(cb.value);
       });
@@ -233,7 +232,6 @@ if (brandLogo) {
     errorEl.style.display = allRequiredFilled() ? 'none' : 'block';
   };
 
-  // Live-Events: erst NACH fehlgeschlagenem Submit reagieren
   requiredIds.forEach(id => {
     const el = getEl(id);
     if (el) {
@@ -276,23 +274,18 @@ if (brandLogo) {
     updateDaytimeError();
 
     if (!okFields || !okConsent) {
-      // Fokus auf erstes fehlerhaftes Feld
       const firstEmpty = requiredIds.map(getEl).find(el => el && !el.value.trim());
       if (firstEmpty) { firstEmpty.focus({preventScroll:false}); return; }
 
-      // Ungültige E-Mail explizit fokussieren
       if (!emailValid()) { getEl('rc-email')?.focus({preventScroll:false}); return; }
 
-      // Fehlende Uhrzeit -> erstes Zeitfeld
       const firstDay = Array.from(selectedDays)[0];
       if (firstDay) { getEl(`time-${slug(firstDay)}`)?.focus({preventScroll:false}); return; }
 
-      // Einwilligung fehlt
       if (consentBox && !okConsent) { consentBox.focus({preventScroll:false}); }
       return;
     }
 
-    // Schedule bauen (mit pace/distance pro Tag)
     const schedule = Array.from(selectedDays).map(day => {
       const base = slug(day);
       const time = (getEl(`time-${base}`)?.value || '').trim();
@@ -322,7 +315,6 @@ if (brandLogo) {
 
       await postForm(payload);
 
-      // Erfolgsmeldung tippen + oben einblenden
       const wrap = document.getElementById('submit-success');
       const typer = document.getElementById('submit-typer');
       if (wrap && typer) {
@@ -332,9 +324,8 @@ if (brandLogo) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      // Formular resetten
       form.reset();
-      triedSubmit = false; // Reset, damit Fehler nicht direkt wieder angezeigt werden
+      triedSubmit = false;
       selectedDays.clear();
       renderDaytimeFields();
       updateOpenButtonLabel();

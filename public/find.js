@@ -78,7 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function syncRadiusUiVisibility() {
     const hasPlace = !!(inpPlzCity?.value || '').trim();
     if (!inpRadius || !outRadius) return;
-    inpRadius.closest('.section').style.display = hasPlace ? '' : 'none';
+    const sec = inpRadius.closest('.section');
+    if (sec) sec.hidden = !hasPlace;
   }
   if (inpRadius && outRadius) {
     const syncVal = () => { outRadius.textContent = `${parseInt(inpRadius.value||'0',10)} km`; };
@@ -88,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== Map ===== */
   const map = L.map('map').setView([51.1657, 10.4515], 6);
+  window.map = map; // global, z. B. zum Radius-Kreis zeichnen
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution:'&copy; OpenStreetMap'
   }).addTo(map);
@@ -100,8 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(r => r.json())
     .then(rows => {
       allClubs = normalizeClubs(rows || []);
-      buildGlobalPlaceSuggest();      // Vorschläge aus Nominatim (DE) – global
-      render(allClubs);               // initial: alle anzeigen
+      buildGlobalPlaceSuggest();      // Vorschläge
+      render(allClubs);               // initial
     })
     .catch(err => console.error('clubs load failed', err));
 
@@ -159,18 +161,14 @@ document.addEventListener('DOMContentLoaded', () => {
   function parseTagCell(cell) {
     const txt = norm(cell);
     if (!txt) return null;
-
-    // Teile am Pipe trennen, erstes Segment "Tag Zeit", weitere evtl. "Pace xx", "Strecke yy"
     const parts = txt.split('|').map(s => s.trim()).filter(Boolean);
 
     let day = '', time = '', paceText = '', distanceText = '';
 
-    // Erstes Segment: "Montag 18:30" etc.
     if (parts[0]) {
       const m = parts[0].match(/^([A-Za-zÄÖÜäöüß]+)\s+(\d{1,2}:\d{2})$/);
       if (m) { day = m[1]; time = m[2]; }
       else {
-        // robust: versuche separat
         const m2 = parts[0].match(/^([A-Za-zÄÖÜäöüß]+)/);
         const m3 = parts[0].match(/(\d{1,2}:\d{2})/);
         if (m2) day = m2[1];
@@ -178,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Restliche Segmente
     for (let i=1;i<parts.length;i++){
       const p = parts[i];
       if (/pace/i.test(p)) {
@@ -204,14 +201,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const name     = norm(pick(r, 'Name','name','Run Club','Clubname'));
       const plzcity  = norm(pick(r, 'PLZ/Stadt','plzcity','PLZ Stadt','PLZ, Stadt','Ort (PLZ/Stadt)'));
       const meeting  = norm(pick(r, 'Treffpunkt','meeting','Ort','Standort des Treffpunkts'));
-      const about    = norm(pick(r, 'Über uns','Über Uns','about','Beschreibung'));
+      const about    = norm(pick(r, 'Über uns','Über Uns','Unter uns','Unter Uns','about','Beschreibung'));
       const instagram= norm(pick(r, 'Instagram/Website','instagram','Instagram','Website','Webseite','Instagram / Website'));
       const email    = norm(pick(r, 'E-Mail','email'));
       const host     = norm(pick(r, 'Host','host'));
 
       const key = makeClubKey(name, plzcity, meeting);
 
-      // Tag 1..7 → schedule[]
       const tagCells = [
         pick(r,'Tag 1','tag 1','Tag1'),
         pick(r,'Tag 2','tag 2','Tag2'),
@@ -249,7 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // Aggregierte Pace-/Distanzbereiche für Filter (über alle Tage)
       let paceMin = null, paceMax = null, distMin = null, distMax = null;
       schedule.forEach(s=>{
         if (s.paceMin!=null) paceMin = paceMin==null ? s.paceMin : Math.min(paceMin, s.paceMin);
@@ -264,14 +259,13 @@ document.addEventListener('DOMContentLoaded', () => {
         name, plzcity, meeting, about,
         email, host,
         contactLabel, contactHref, contactText,
-        schedule,            // [{day,time,paceText,distanceText,paceMin,paceMax,distMin,distMax,raw}]
-        // für Filter:
+        schedule,
         paceMin, paceMax, distMin, distMax
       };
     });
   }
 
-  /* ===== Vorschläge Stadt/PLZ (Deutschland komplett per Nominatim) ===== */
+  /* ===== Vorschläge Stadt/PLZ ===== */
   function showSuggestions(items) {
     if (!sugList) return;
     if (!items || items.length === 0) {
@@ -282,34 +276,76 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   let suggestAbort = null;
-  async function queryPlaceSuggest(q) {
-    const base = 'https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6&countrycodes=de';
-    const url  = `${base}&q=${encodeURIComponent(q)}`;
+  async function queryPlaceSuggest(qRaw) {
+    const q = String(qRaw || '').trim();
+    if (!q) return [];
+
+    const base = 'https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=10&countrycodes=de';
     if (suggestAbort) try { suggestAbort.abort(); } catch {}
     suggestAbort = new AbortController();
+
     try {
-      const r = await fetch(url, { headers: { 'Accept':'application/json' }, signal: suggestAbort.signal });
+      const r = await fetch(`${base}&q=${encodeURIComponent(q)}`, {
+        headers: { 'Accept':'application/json' },
+        signal: suggestAbort.signal
+      });
       const data = await r.json();
-      const out = (data||[]).map(e => {
-        const pc = e.address?.postcode ? `${e.address.postcode} ` : '';
+
+      const raw = (data || []).map(e => {
+        const pc   = e.address?.postcode ?? '';
         const city = e.address?.city || e.address?.town || e.address?.village || e.address?.municipality || e.address?.county || '';
-        return `${pc}${city}`.trim();
-      }).filter(Boolean);
-      // Deduplizieren
-      return Array.from(new Set(out));
-    } catch { return []; }
+        const label = `${pc ? pc + ' ' : ''}${city}`.trim() || (e.display_name || '').split(',')[0];
+        return { label, pc, city };
+      }).filter(x => x.label);
+
+      const dedup = [];
+      const seen = new Set();
+      for (const it of raw) {
+        if (seen.has(it.label.toLowerCase())) continue;
+        seen.add(it.label.toLowerCase());
+        dedup.push(it);
+      }
+
+      const isDigits = /^\d{1,5}$/.test(q);
+      const startsWith = (s, p) => String(s || '').startsWith(p);
+      const priority = isDigits
+        ? dedup.filter(x => startsWith(x.pc, q))
+        : dedup.filter(x => x.label.toLowerCase().startsWith(q.toLowerCase()));
+
+      const merged = [...priority, ...dedup.filter(x => !priority.includes(x))];
+
+      return merged.slice(0, 10).map(x => x.label);
+    } catch {
+      return [];
+    }
   }
+
   function buildGlobalPlaceSuggest() {
     if (!inpPlzCity || !sugList) return;
     const onInput = async () => {
       const q = (inpPlzCity.value || '').trim();
       syncRadiusUiVisibility();
-      if (!q) { showSuggestions([]); return; }
       const items = await queryPlaceSuggest(q);
       showSuggestions(items);
     };
     inpPlzCity.addEventListener('input', onInput);
     inpPlzCity.addEventListener('focus', onInput);
+
+    // Enter im Eingabefeld: Top-Vorschlag automatisch übernehmen
+    inpPlzCity.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const q = (inpPlzCity.value || '').trim();
+        const items = await queryPlaceSuggest(q);
+        if (items && items[0]) {
+          inpPlzCity.value = items[0];
+        }
+        showSuggestions([]);
+        syncRadiusUiVisibility();
+        await applyFilters();
+      }
+    });
+
     document.addEventListener('click', (e) => {
       if (!sugList.contains(e.target) && e.target !== inpPlzCity) { sugList.hidden = true; }
     });
@@ -323,23 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inpPlzCity.value = li.textContent; sugList.hidden = true; inpPlzCity.focus(); syncRadiusUiVisibility();
       }
     });
-    // initial
     syncRadiusUiVisibility();
-  }
-
-  /* ===== Weekday-Dropdown ===== */
-  if (weekdayDropdown && weekdayBtn && weekdayList) {
-    const open = (pin=false) => { weekdayDropdown.classList.toggle('pinned', pin); weekdayBtn.setAttribute('aria-expanded', String(pin)); };
-    weekdayBtn.addEventListener('click', (e) => { e.stopPropagation(); open(!weekdayDropdown.classList.contains('pinned')); });
-    weekdayList.querySelectorAll('.menu-item').forEach(b=>{
-      b.addEventListener('click', ()=> {
-        selectedWeekday = b.dataset.day || '';
-        weekdayLabel.textContent = selectedWeekday || 'Alle';
-        open(false);
-      });
-    });
-    document.addEventListener('click', (e) => { if (!weekdayDropdown.contains(e.target)) open(false); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') open(false); });
   }
 
   /* ===== Filtern ===== */
@@ -459,11 +479,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ===== Filter-Logik inkl. Radius ===== */
+  // wird in applyFilters gesetzt, um Textfilter zu überspringen wenn Radius aktiv ist
+  window.__ignoreTextFilter = false;
+
   function matchesFilters(c) {
-    // Stadt/PLZ
+    const ignoreText = window.__ignoreTextFilter === true;
+
+    // Stadt/PLZ (nur wenn NICHT per Radius gesucht wird)
     const qpc = (inpPlzCity.value || '').trim().toLowerCase();
-    if (qpc && !(c.plzcity || '').toLowerCase().includes(qpc)) return false;
+    if (!ignoreText && qpc && !(c.plzcity || '').toLowerCase().includes(qpc)) return false;
 
     // Name
     const qn = (inpName.value || '').trim().toLowerCase();
@@ -487,16 +511,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (times.length > 0 && !times.some(t => fromM <= t && t <= toM)) return false;
     }
 
-    // Strecke (km) – nur filtern, wenn Tag eine Range hat
+    // Strecke (km)
     const wantKm = parseFloat((inpDist.value || '').replace(',','.'));
     if (!isNaN(wantKm)) {
-      // akzeptiere, wenn irgendein Tag die Distanz erfüllt
       const ok = (c.schedule || []).some(s => s.distMin!=null && s.distMax!=null && s.distMin <= wantKm && wantKm <= s.distMax);
       if (!ok && c.distMin!=null && c.distMax!=null && !(c.distMin <= wantKm && wantKm <= c.distMax)) return false;
       if (!ok && (c.distMin==null || c.distMax==null)) return false;
     }
 
-    // Pace (min/km) – analog
+    // Pace (min/km)
     const wantPace = toMin(inpPace.value);
     if (wantPace != null) {
       const ok = (c.schedule || []).some(s => s.paceMin!=null && s.paceMax!=null && s.paceMin <= wantPace && wantPace <= s.paceMax);
@@ -508,21 +531,46 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function applyFilters() {
+    // erst alle „Fach“-Filter anwenden (ohne Radius)
     let base = allClubs.filter(matchesFilters);
 
     // Radiusfilter nur wenn Ort gesetzt & Radius > 0
-    const qpc = (inpPlzCity?.value || '').trim();
+    const rawPlace = (inpPlzCity?.value || '').trim();
     const radiusKm = parseInt((inpRadius?.value || '0'), 10) || 0;
-    if (qpc && radiusKm > 0) {
-      const center = await geocodePlace(qpc);
+
+    window.__ignoreTextFilter = false;  // default
+
+    if (rawPlace && radiusKm > 0) {
+      // 1) direkter Geocode
+      let center = await geocodePlace(rawPlace);
+
+      // 2) Fallback: Top-Vorschlag nutzen
+      if (!center) {
+        const sugg = await queryPlaceSuggest(rawPlace);
+        if (sugg && sugg[0]) {
+          center = await geocodePlace(sugg[0]);
+        }
+      }
+
       if (center) {
-        const coordsMap = await ensureCoordsForClubs(base);
-        base = base.filter(c => {
+        window.__ignoreTextFilter = true; // Textfilter Stadt/PLZ aus
+        // Radius ANSCHLIESSEND auf komplette, neu gefilterte Liste anwenden
+        const coordsMap = await ensureCoordsForClubs(allClubs.filter(matchesFilters));
+        base = allClubs.filter(matchesFilters).filter(c => {
           const pt = coordsMap.get(c.key);
           if (!pt) return false;
           const d = haversineKm(center, pt);
           return d <= radiusKm;
         });
+
+        // Optional: Radius-Kreis einzeichnen
+        try {
+          if (typeof L !== 'undefined' && window.map) {
+            if (window._radiusLayer) { window.map.removeLayer(window._radiusLayer); }
+            window._radiusLayer = L.circle(center, { radius: radiusKm * 1000, weight: 1, opacity: .8, fillOpacity: .08 });
+            window._radiusLayer.addTo(window.map);
+          }
+        } catch {}
       }
     }
 
